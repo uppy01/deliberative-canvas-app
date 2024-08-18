@@ -1,0 +1,53 @@
+<div class="container-fluid mt-5">
+
+    <div class="progress px-1" style="height: 3px;">
+        <div id="processProgBar" class="progress-bar" role="progressbar" style="width: 0%;"></div>
+    </div>
+    <div class="d-flex justify-content-between mb-5" style="position: relative; text-align: center; transform: translateY(-50%)">
+        <button #showImportSource_btn class="btn btn-info rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="0" onclick="processProgBar.style.width = '0%'">1) Import Source</button>
+        <button #showFieldMapping_btn class="btn btn-light rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="1" onclick="processProgBar.style.width = '33%'">2) Field Mapping</button>
+        <button #showDataOutput_btn class="btn btn-light rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="2" onclick="processProgBar.style.width = '67%'">3) Data Output</button>
+        <button #showExport_btn class="btn btn-light rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="3" onclick="processProgBar.style.width = '100%'">4) Export</button>
+    </div>
+    
+    <div id="processCarousel" class="carousel slide container">
+        <div class="carousel-inner">
+          <div class="carousel-item active">
+            <div class="input-group mt-3">
+                <button class="btn btn-primary" onclick="localFile.click()">Select Local CSV</button>
+                <input type="file" id="localFile" (change)="localFileSelected($event)" style="display: none;"/>
+            </div>
+            <div class="input-group mt-3">
+                <button class="btn btn-primary" (click)="remoteFileSelected()" [disabled]="!importURL.includes('.csv')">Import Remote CSV</button> 
+                <input type="text" class="form-control" [(ngModel)]="importURL" placeholder="enter URL of csv..." />
+            </div>
+          </div>
+          <div class="carousel-item justify-content-center">
+            <h1 class="display-6 mb-3">Select source field mappings to apply...</h1>
+            <ul #fieldMappings_listgroup class="list-group">
+                <li *ngFor="let fieldMapping of fieldMappings; let i = index" class="list-group-item mb-2">
+                  <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" [value]="i" [attr.id]="'fieldMapping_radio' + i" (change)="fieldMappingSelectionChange($event)" [checked]="fieldMapping.id === selectedFieldMapping?.id">
+                  <label class="form-check-label fs-4" [attr.for]="'fieldMapping_radio' + i">{{fieldMapping.sourceName}}</label>
+                </li>
+                <li class="list-group-item mb-2">
+                    <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" value="" id="noFieldMapping_radio">
+                    <label class="form-check-label fs-4" for="noFieldMapping_radio">None</label>
+                </li>
+              </ul>
+              <button class="btn btn-primary w-50" (click)="parseFile()">Next</button>
+          </div>
+          <div class="carousel-item">
+            <ul class="list-group list-group-flush">
+                <li *ngFor="let response of responses" class="list-group-item">({{response['date']}}) ({{response['group-informed-consensus']}}) {{response['Label']}}</li>
+            </ul>
+          </div>
+          <div class="carousel-item v-stack">
+            <div class="d-flex justify-content-center">
+                <button class="btn btn-success text-large" (click)="exportAsKumuJSON()" [disabled]="!responses || responses.length === 0">Export as JSON File</button>
+                <button *ngIf="exportedURL !== ''" class="btn btn-outline ml-2" title="copy URL for hosted JSON file" (click)="copyExportedURL()"><i class="bi bi-copy"></i></button>
+            </div>
+          </div>
+        </div>
+    </div>
+
+</div>

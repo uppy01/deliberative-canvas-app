@@ -1,0 +1,23 @@
+<div *ngIf="!receivingLink">
+    You can connect your profile to another device (or a different web browser on this device) by creating a password-protected link...
+</div>
+<div *ngIf="receivingLink">
+    You have provided a link that will connect this device/browser with your existing profile. If you wish to proceed please enter the password that was set when creating the link...
+</div>
+<br/>
+<div>
+    <label for="password_input">{{receivingLink ? 'Enter the password...' : 'Set a password...'}}</label>
+    <input class="form-control" id="password_input" type="password" [(ngModel)]="linkPassword"/>
+    <button *ngIf="!receivingLink" class="btn btn-primary w-100 mt-3" type="button" (click)="generateEncryptedLink()" [disabled]="linkPassword.length < 6">Generate Link</button>
+    <button *ngIf="receivingLink" class="btn btn-success w-100 mt-3" type="button" (click)="decryptLink()" [disabled]="linkPassword.length < 6">Link Device</button>   
+</div>
+
+<hr/>
+
+<div *ngIf="!receivingLink && linkToSend !== ''" class="d-flex justify-content-center">
+    <button class="btn btn-warning w-50" (click)="copyLinkToClipboard()"><i class="bi bi-copy"></i> Copy Link</button>
+</div>
+<div *ngIf="!receivingLink" class="container mt-4" #qrCodeOutput style="max-width: 300px;">
+
+</div>
+
