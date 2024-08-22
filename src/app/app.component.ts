@@ -18,7 +18,7 @@ import { AboutuserService } from './services/data/aboutuser.service';
 })
 export class AppComponent {
   title = 'Deliberative Canvas App';
-  context:string = 'dev'
+  context:string = 'staging'
   
   displayName:string = ''
 
