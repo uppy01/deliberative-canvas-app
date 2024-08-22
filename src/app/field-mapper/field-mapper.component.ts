@@ -186,7 +186,7 @@ export class FieldMapperComponent {
 
   templateCSVSelected(event) {
     this.templateCSV = event.target.files[0]
-    event.target.value = '' //this resets value of the html (file) input element so that the change event is still triggered if, the next time a file is selected, it is the same as the current one.
+    event.target.value = '' //this resets value of the file input element so that the change event is still triggered if, the next time a file is selected, it is the same as the current one.
   }
 
   clearSelectedTemplateCSV() {

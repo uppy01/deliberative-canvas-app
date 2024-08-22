@@ -32,7 +32,7 @@ export class FieldmappingService {
       console.log('get FieldMapping successful',doc)
       let fieldMapping:FieldMapping
       //doc.text of null/zero length signifies a tombstone (deleted) doc
-      if(doc.text?.length > 0) {
+      if(doc?.text?.length > 0) {
         fieldMapping = JSON.parse(doc.text)
         fieldMapping.dateCreated = new Date(fieldMapping.dateCreated)
         fieldMapping.dateUpdated = new Date(fieldMapping.dateUpdated)
@@ -53,7 +53,7 @@ export class FieldmappingService {
     else {
       console.log('get all FieldMappings successful',docs)
       //doc.text of null/zero length signifies a tombstone (deleted) doc
-      let fieldMappings:FieldMapping[] = docs.filter((doc) => doc.text?.length > 0).map((doc) => JSON.parse(doc.text))
+      let fieldMappings:FieldMapping[] = docs.filter((doc) => doc.text?.length > 0).map((doc) => JSON.parse(doc.text)).sort((a,b) => b.dateUpdated - a.dateUpdated)
       fieldMappings.forEach((fieldMapping) => {
         fieldMapping.dateCreated = new Date(fieldMapping.dateCreated)
         fieldMapping.dateUpdated = new Date(fieldMapping.dateUpdated)
@@ -111,7 +111,30 @@ export class FieldmappingService {
       console.log('remoteFieldMappings: ',remoteFieldMappings)
       
       if(remoteFieldMappings && remoteFieldMappings.length > 0) {
-        await this.mergeFieldMappings(remoteFieldMappings)
+        
+        for(let remoteFieldMapping of remoteFieldMappings) {
+          const existingCoreFieldMapping = await this.getFieldMapping(remoteFieldMapping.id)
+          if(existingCoreFieldMapping) {
+            existingCoreFieldMapping.sourceName = remoteFieldMapping.sourceName
+            existingCoreFieldMapping.fields = remoteFieldMapping.fields
+            await this.saveFieldMapping(existingCoreFieldMapping)
+          }
+          else {
+            const newCoreFieldMapping:FieldMapping = {
+              id: remoteFieldMapping.id,
+              sourceName: remoteFieldMapping.sourceName,
+              isCoreSource: true,
+              fields: remoteFieldMapping.fields,
+              dateCreated: Date.now(),
+              createdBy: this.appService.user
+            }
+            await this.saveFieldMapping(newCoreFieldMapping)
+          }
+          
+        }
+        this.fieldMappingServiceReady.next(true)
+        
+        //await this.mergeFieldMappings(remoteFieldMappings)
       }
       else {
         console.log('problem parsing remote field mappings')

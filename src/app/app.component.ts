@@ -1,20 +1,26 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, RouterLink } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { AppService } from './services/app.service';
 import { LinkDeviceComponent } from "./link-device/link-device.component";
 import Modal from 'bootstrap/js/dist/modal'
 import { SyncService } from './services/sync.service';
+import { FormsModule } from '@angular/forms';
+import * as Earthstar from 'earthstar'
+import { AboutuserService } from './services/data/aboutuser.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, LinkDeviceComponent],
+  imports: [RouterOutlet, RouterLink, LinkDeviceComponent,FormsModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
 export class AppComponent {
   title = 'Deliberative Canvas App';
+  context:string = 'dev'
+  
+  displayName:string = ''
 
   @ViewChild('linkDevice_div')
   linkDevice:ElementRef<HTMLDivElement>
@@ -24,7 +30,16 @@ export class AppComponent {
   linkDevice_component:LinkDeviceComponent
 
 
-  constructor(protected appService:AppService, protected authService:AuthService, protected syncService:SyncService) {
+  constructor(protected appService:AppService, protected authService:AuthService, private aboutUserService:AboutuserService, protected syncService:SyncService) {
+    
+  }
+
+  ngOnInit() {
+    const storageConfiguredSubscription = this.appService.storageConfigured.subscribe((configured) => {
+      if(configured) {
+        this.getDisplayName()
+      }
+    })
     
   }
 
@@ -41,8 +56,23 @@ export class AppComponent {
     }
   }
 
+  async getDisplayName() {
+    this.displayName = await this.aboutUserService.getDisplayName()
+  }
+
+  async saveDisplayName() {
+    const result = await this.aboutUserService.saveDisplayName(this.displayName)
+    if(result) {
+      this.getDisplayName()
+    }
+  }
+
   createLink() {
     this.linkDevice_Modal.show()
+  }
+
+  async copyToClipboard(text:string) {
+    await navigator.clipboard.writeText(text)
   }
 
 }

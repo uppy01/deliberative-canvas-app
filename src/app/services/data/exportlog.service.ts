@@ -23,7 +23,7 @@ export class ExportlogService {
       console.log('get ExportLog successful',doc)
 
       //doc.text of null/zero length signifies a tombstone (deleted) doc
-      if(doc.text?.length > 0) {
+      if(doc?.text?.length > 0) {
         let exportLog:ExportLog = JSON.parse(doc.text)
         exportLog.dateCreated = new Date(exportLog.dateCreated)
         exportLog.dateUpdated = new Date(exportLog.dateUpdated)
@@ -35,10 +35,12 @@ export class ExportlogService {
           return
         }
         else {
-          console.log('get ExportLog attachment successful',attachment)
-          const attachmentBytes = await attachment.bytes()
-          const attachmentBuffer = attachmentBytes.buffer
-          exportLog.fileData = new Blob([attachmentBuffer],{type:`text/${exportLog.fileExtension}`})
+          if(attachment) {
+            console.log('get ExportLog attachment successful',attachment)
+            const attachmentBytes = await attachment.bytes()
+            const attachmentBuffer = attachmentBytes.buffer
+            exportLog.fileData = new Blob([attachmentBuffer],{type:`text/${exportLog.fileExtension}`})
+          }
           return exportLog
         }
       }

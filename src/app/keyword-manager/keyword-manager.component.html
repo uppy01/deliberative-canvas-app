@@ -1,0 +1,37 @@
+<div class="container-fluid w-75 mt-5">
+    <div class="row mt-2 mb-5">
+        <div class="col-3">
+        <input type="text" class="form-control" [(ngModel)]="selectedKeyword.word" style="text-align:right;" placeholder="enter keyword...">
+        </div>
+        <div class="col-7">
+        <input type="text" class="form-control" [(ngModel)]="keywordVariants" placeholder="enter variations of keyword (comma-separated)..." title="enter variations of the keyword as a comma-separated list..." [disabled]="selectedKeyword?.word === ''">
+        </div>
+        <div class="col"> 
+            <button class="btn btn-success" (click)="saveKeyword()" [disabled]="selectedKeyword?.word === ''">{{selectedKeyword?.id ? 'Update' : 'Add'}}</button>
+            <button *ngIf="selectedKeyword?.id" class="btn btn-link" (click)="cancelEditingKeyword()">cancel</button>
+        </div>
+    </div>
+    <div class="row mb-2">
+        <div class="col-3" style="text-align:right;">
+            <b>Keyword</b>
+        </div>
+        <div class="col-7">
+            <b>Variations</b>
+        </div>
+        <div class="col">
+
+        </div>
+    </div>
+    <div *ngFor="let keyword of allKeywords" class="row mb-3">
+        <div class="col-3">
+        <input type="text" class="form-control" value="{{keyword.word}}" style="text-align:right;" disabled="true">
+        </div>
+        <div class="col-7">
+        <input type="text" class="form-control" value="{{keyword.variants.toString()}}" disabled="true">
+        </div>
+        <div class="col">
+            <button class="btn" (click)="editKeyword(keyword.id)"><i class="bi bi-pencil-square"></i></button>
+            <button class="btn" (click)="removeKeyword(keyword.id)"><i class="bi bi-trash3"></i></button>
+        </div>
+    </div>
+</div>

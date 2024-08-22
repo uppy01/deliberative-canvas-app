@@ -6,4 +6,6 @@
     - allowedCommonJsDependencies in angular.json
 - boostrap gotcha's
     - referencing bootstrap classes in javascript messes with dropdowns, popovers etc - https://github.com/twbs/bootstrap/issues/32749
+- to build and deploy using AWS Amplify hosting, need to manually set node.js version to minimum required by Angular compiler (currently v18.19.1)
+    - do this in `hosting > build settings > build image settings > live package updates` section of the Amplify console.
 

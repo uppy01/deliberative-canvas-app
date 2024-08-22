@@ -6,6 +6,7 @@ import { toSvgString } from "@ribpay/qr-code-generator/utils";
 import { NgIf } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { EarthstarProfile } from '../services/data/data-types';
+import { AboutuserService } from '../services/data/aboutuser.service';
 
 @Component({
   selector: 'app-link-device',
@@ -18,10 +19,7 @@ export class LinkDeviceComponent {
 
   linkPassword:string = ''
   linkToSend:string = ''
-  profileToEncrypt:string = JSON.stringify({
-    author: {authorAddress: "@mark.bytfhrh59gjr95j", authorSecret: "fghjfgfgir8645wnjfdkg"},
-    share: {shareAddress:"+dgfgfgfg6920184t",shareSecret:"4dhgdgj5hb6jkdfh3455"}
-  })
+  profileToEncrypt:string
   encryptedLink:string
   myCrypto:MyCrypto = new MyCrypto()
   myQRCodeGenerator = qrcodegen.QrCode
@@ -31,8 +29,11 @@ export class LinkDeviceComponent {
 
   receivingLink:boolean
 
+  @Input()
+  displayName:string
 
-  constructor(private authService:AuthService) {
+
+  constructor(private authService:AuthService, private aboutUserService:AboutuserService) {
     this.encryptedLink = window.location.hash?.slice(1)
     const urlParams = new URLSearchParams(window.location.search)
     this.receivingLink = urlParams.get('linkdevice') ? true : false
@@ -62,7 +63,7 @@ export class LinkDeviceComponent {
     const userProfile:EarthstarProfile = {
       author: this.authService.esSettings.author,
       shares: shares,
-      displayName: 'Mark'
+      displayName: this.displayName && this.displayName !== '' ? this.displayName : ''
     }
     
     console.log(userProfile)
@@ -95,9 +96,13 @@ export class LinkDeviceComponent {
     await navigator.clipboard.writeText(this.linkToSend)
   }
 
-  importProfile(userProfile:EarthstarProfile) {
+  async importProfile(userProfile:EarthstarProfile) {
     this.authService.updateAuthorCredentials(userProfile.author)
     this.authService.updateShares(userProfile.shares,true)
+    
+    await this.aboutUserService.saveDisplayName(userProfile.displayName)
+
+    window.location.replace(window.location.protocol + '//' + window.location.host)
   }
 
   reset() {

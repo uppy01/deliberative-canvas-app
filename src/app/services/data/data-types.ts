@@ -1,4 +1,4 @@
-import { AuthorKeypair, ShareAddress, SharedSettings, ShareKeypair } from "earthstar"
+import { AuthorKeypair, ShareAddress } from "earthstar"
 
 export type EarthstarDocPath = string
 export type EarthstarAuthorAddress = string
@@ -27,7 +27,20 @@ export type ExportLog = {
     fileName:string,
     fileExtension:string,
     fileData?:Blob,
-    remoteURL?:string,
+    importSourceURL?:string,
+    appliedFieldMappingID?:string,
+    appliedKeywordIDs?:string[],
+    dateCreated?:Date | number,
+    dateUpdated?:Date | number,
+    createdBy?:EarthstarAuthorAddress,
+    updatedBy?:EarthstarAuthorAddress
+}
+
+export type Keyword = {
+    id?:EarthstarDocPath,
+    word:string,
+    variants?:string[]
+    isActive:boolean
     dateCreated?:Date | number,
     dateUpdated?:Date | number,
     createdBy?:EarthstarAuthorAddress,
