@@ -7,6 +7,7 @@ import { NgIf } from '@angular/common';
 import { AuthService } from '../services/auth.service';
 import { EarthstarProfile } from '../services/data/data-types';
 import { AboutuserService } from '../services/data/aboutuser.service';
+import { SyncService } from '../services/sync.service';
 
 @Component({
   selector: 'app-link-device',
@@ -33,7 +34,7 @@ export class LinkDeviceComponent {
   displayName:string
 
 
-  constructor(private authService:AuthService, private aboutUserService:AboutuserService) {
+  constructor(private authService:AuthService, private syncService:SyncService, private aboutUserService:AboutuserService) {
     this.encryptedLink = window.location.hash?.slice(1)
     const urlParams = new URLSearchParams(window.location.search)
     this.receivingLink = urlParams.get('linkdevice') ? true : false
@@ -63,7 +64,8 @@ export class LinkDeviceComponent {
     const userProfile:EarthstarProfile = {
       author: this.authService.esSettings.author,
       shares: shares,
-      displayName: this.displayName && this.displayName !== '' ? this.displayName : ''
+      displayName: this.displayName && this.displayName !== '' ? this.displayName : '',
+      syncServerURL: this.syncService.syncServerURL && this.syncService.syncServerURL !== '' ? this.syncService.syncServerURL : ''
     }
     
     console.log(userProfile)
@@ -99,10 +101,14 @@ export class LinkDeviceComponent {
   async importProfile(userProfile:EarthstarProfile) {
     this.authService.updateAuthorCredentials(userProfile.author)
     this.authService.updateShares(userProfile.shares,true)
-    
     await this.aboutUserService.saveDisplayName(userProfile.displayName)
 
-    window.location.replace(window.location.protocol + '//' + window.location.host)
+    this.syncService.addSyncServer(userProfile.syncServerURL)
+    const syncCompletedSubscription = this.syncService.syncCompletedSuccessfully.subscribe((success) => {
+      if(success) {
+        window.location.replace(window.location.protocol + '//' + window.location.host)
+      }
+    })
   }
 
   reset() {

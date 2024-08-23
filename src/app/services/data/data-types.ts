@@ -6,7 +6,8 @@ export type EarthstarAuthorAddress = string
 export type EarthstarProfile = {
     author:AuthorKeypair,
     shares: {shareAddress:ShareAddress, shareSecret?:string}[]
-    displayName?:string
+    displayName?:string,
+    syncServerURL?:string
 }
 
 export type FieldMapping = {
