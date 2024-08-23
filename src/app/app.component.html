@@ -14,7 +14,7 @@
           <li><a class="dropdown-item" routerLink="/field-mapper">Field Mappings</a></li>
           <li><a class="dropdown-item" routerLink="/keyword-manager">Keywords</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
+          <li *ngIf="syncService.syncServerURL !== ''"><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
           <li><a class="dropdown-item" (click)="createLink()">Link Device</a></li>
           <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileDetails_div">Profile Details</a></li>
         </ul>
