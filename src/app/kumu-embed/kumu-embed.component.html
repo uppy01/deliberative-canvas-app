@@ -1,0 +1,8 @@
+<div class="input-group container-fluid d-flex w-75 justify-content-center mt-2">
+    <input class="form-control" [(ngModel)]="kumuEmbedURL"/>
+    <button class="btn btn-primary" (click)="loadIframeContent()">Load</button>
+</div>
+<div class="d-flex justify-content-center mt-3">
+    <iframe [src]="urlSafe" width="800" height="600" frameborder="1"></iframe>
+</div>
+

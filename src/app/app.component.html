@@ -1,19 +1,24 @@
 <nav class="navbar border-bottom" style="background-color: #e3f2fd;">
   <div class="container-fluid">
     <a class="navbar-brand" routerLink="/">Deliberative Canvas ({{context}})</a>
-    <div class="nav-item dropdown">
-      <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-        {{(displayName && displayName !== '' ? displayName : 'Menu')}}
-      </a>
-      <ul class="dropdown-menu dropdown-menu-end">
-        <li><a class="dropdown-item" routerLink="/">Home</a></li>
-        <li><a class="dropdown-item" routerLink="/field-mapper">Field Mappings</a></li>
-        <li><a class="dropdown-item" routerLink="/keyword-manager">Keywords</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
-        <li><a class="dropdown-item" (click)="createLink()">Link Device</a></li>
-        <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileDetails_div">Profile Details</a></li>
-      </ul>
+    <div class="d-flex align-items-center">
+      <div *ngIf="syncService.syncInProgress" class="spinner-border spinner-border-sm text-success m-2">
+        <span class="visually-hidden">importing data...</span>
+      </div>
+      <div class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+          {{(displayName && displayName !== '' ? displayName : 'Menu')}}
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+          <li><a class="dropdown-item" routerLink="/">Home</a></li>
+          <li><a class="dropdown-item" routerLink="/field-mapper">Field Mappings</a></li>
+          <li><a class="dropdown-item" routerLink="/keyword-manager">Keywords</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
+          <li><a class="dropdown-item" (click)="createLink()">Link Device</a></li>
+          <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileDetails_div">Profile Details</a></li>
+        </ul>
+      </div>
     </div>
   </div>
 </nav>
@@ -44,13 +49,6 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" style="word-wrap: break-word;">
-        <div class="mt-3 mb-5">
-          <label class="form-label" for="displayName_input">Profile name:</label>
-          <div class="input-group">
-            <input class="form-control" id="displayName_input" [(ngModel)]="displayName" placeholder="enter your name..."/>
-            <button class="btn btn-success" (click)="saveDisplayName()" >save</button>
-          </div>
-        </div>
         <div>
           <b>User ID:</b> {{authService.esSettings?.author?.address}}
           <button class="btn btn-light" (click)="copyToClipboard(authService.esSettings.author.address)"><i class="bi bi-clipboard"></i></button>
@@ -59,7 +57,21 @@
           <b>Share ID:</b> {{authService.esSettings?.shares[0]}}
           <button class="btn btn-light" (click)="copyToClipboard(authService.esSettings.shares[0])"><i class="bi bi-clipboard"></i></button>
         </div>
-
+        <div class="mt-4 mb-3">
+          <label class="form-label" for="displayName_input">Profile name:</label>
+          <div class="input-group">
+            <input class="form-control" id="displayName_input" [(ngModel)]="displayName" placeholder="enter your name..."/>
+            <button class="btn btn-success" (click)="saveDisplayName()" data-bs-dismiss="modal">save</button>
+          </div>
+        </div>
+        <div class="mt-3 mb-2">
+          <label class="form-label" for="syncServerURL_input">Sync Server URL:</label>
+          <div class="input-group">
+            <input class="form-control" id="syncServerURL_input" [(ngModel)]="syncService.syncServerURL" placeholder="enter the URL for the server you want to use for syncing data..."/>
+            <button class="btn btn-success" (click)="syncService.addSyncServer()" data-bs-dismiss="modal" [disabled]="syncService.syncServerURL === ''">save</button>
+            <button class="btn btn-link" (click)="syncService.removeSyncServer()" [disabled]="authService.esSettings.servers?.length === 0" >remove</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>

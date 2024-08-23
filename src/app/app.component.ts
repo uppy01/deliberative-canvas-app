@@ -8,11 +8,12 @@ import { SyncService } from './services/sync.service';
 import { FormsModule } from '@angular/forms';
 import * as Earthstar from 'earthstar'
 import { AboutuserService } from './services/data/aboutuser.service';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, RouterLink, LinkDeviceComponent,FormsModule],
+  imports: [RouterOutlet, RouterLink, LinkDeviceComponent,FormsModule,NgIf],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })
@@ -40,7 +41,6 @@ export class AppComponent {
         this.getDisplayName()
       }
     })
-    
   }
 
   ngAfterViewInit() {
