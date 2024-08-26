@@ -10,6 +10,7 @@ export type EarthstarProfile = {
     syncServerURL?:string
 }
 
+//version 1.0
 export type FieldMapping = {
     id?:EarthstarDocPath,
     sourceName:string,
@@ -21,6 +22,7 @@ export type FieldMapping = {
     updatedBy?:EarthstarAuthorAddress
 }
 
+//version 1.0
 export type ExportLog = { 
     id?:EarthstarDocPath,
     title:string,
@@ -37,6 +39,7 @@ export type ExportLog = {
     updatedBy?:EarthstarAuthorAddress
 }
 
+//version 1.0
 export type Keyword = {
     id?:EarthstarDocPath,
     word:string,

@@ -7,7 +7,7 @@
       </div>
       <div class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-          {{(displayName && displayName !== '' ? displayName : 'Menu')}}
+          {{(appService.userDisplayName && appService.userDisplayName !== '' ? appService.userDisplayName : appService.user?.split('.')[0])}}
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" routerLink="/">Home</a></li>
@@ -32,7 +32,7 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <app-link-device [displayName]="displayName"></app-link-device>
+        <app-link-device [displayName]="appService.userDisplayName"></app-link-device>
       </div>
       <div class="modal-footer justify-content-between">
         
@@ -60,7 +60,7 @@
         <div class="mt-4 mb-3">
           <label class="form-label" for="displayName_input">Profile name:</label>
           <div class="input-group">
-            <input class="form-control" id="displayName_input" [(ngModel)]="displayName" placeholder="enter your name..."/>
+            <input class="form-control" id="displayName_input" [(ngModel)]="appService.userDisplayName" placeholder="enter your name..."/>
             <button class="btn btn-success" (click)="saveDisplayName()" data-bs-dismiss="modal">save</button>
           </div>
         </div>

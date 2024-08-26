@@ -2,19 +2,27 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, FieldMapping } from './data-types';
+import { EarthstarDocPath, FieldMapping } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { BehaviorSubject } from 'rxjs';
+import { StorageService } from '../storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FieldmappingService {
 
+  schemaName:string = 'fieldmapping'
+  schemaVersion:string = '1.0'
+  schemaPath:string
+
   fieldMappingServiceReady:BehaviorSubject<boolean> = new BehaviorSubject(false)
 
-  constructor(private appService:AppService, private authService:AuthService) {
-    const storageConfiguredSubscription = this.appService.storageConfigured.subscribe((configured) => {
+
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+    this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
+    
+    const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
       if(configured) {
         this.fetchRemoteFieldMappings()
       }
@@ -22,7 +30,7 @@ export class FieldmappingService {
   }
 
   async getFieldMapping(id:EarthstarDocPath):Promise<FieldMapping | null> {
-    const doc = await this.appService.replica.getLatestDocAtPath(id)
+    const doc = await this.storageService.replica.getLatestDocAtPath(id)
     if(Earthstar.isErr(doc)) {
       console.error('error getting FieldMapping',doc);
       alert('error loading field mapping - exporting may not work')
@@ -42,8 +50,8 @@ export class FieldmappingService {
   }
 
   async getFieldMappings():Promise<FieldMapping[] | null> {
-    const docs = await this.appService.replica.queryDocs({
-      filter: { pathStartsWith: `/${this.appService.appName}/fieldmapping/` }
+    const docs = await this.storageService.replica.queryDocs({
+      filter: { pathStartsWith: this.schemaPath }
     }) 
     if(Earthstar.isErr(docs)) {
       console.error('error getting all FieldMappings',docs);
@@ -67,7 +75,7 @@ export class FieldmappingService {
     //if we are creating a new FieldMapping then we assign an id, dateCreated and createdBy...
     if(!fieldMapping.id) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
-      fieldMapping.id = `/${this.appService.appName}/fieldmapping/${Date.now()}__${generateRandomString(4)}`
+      fieldMapping.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       fieldMapping.dateCreated = Date.now()
       fieldMapping.createdBy = this.appService.user
     }
@@ -75,7 +83,7 @@ export class FieldmappingService {
     fieldMapping.updatedBy = this.appService.user
     
     // Write to the replica.
-    const result = await this.appService.replica.set(this.authService.esSettings.author, {
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
       text: JSON.stringify(fieldMapping),
       path: fieldMapping.id,
     });
@@ -92,7 +100,7 @@ export class FieldmappingService {
   }
 
   async deleteFieldMapping(id:EarthstarDocPath) {
-    const result = await this.appService.replica.wipeDocAtPath(this.authService.esSettings.author,id)
+    const result = await this.storageService.replica.wipeDocAtPath(this.authService.esSettings.author,id)
     if(Earthstar.isErr(result)) {
       console.error('error deleting FieldMapping',result);
       alert('ERROR DELETING!')
@@ -111,8 +119,9 @@ export class FieldmappingService {
       console.log('remoteFieldMappings: ',remoteFieldMappings)
       
       if(remoteFieldMappings && remoteFieldMappings.length > 0) {
-        
         for(let remoteFieldMapping of remoteFieldMappings) {
+          //prepend the remote id with the current schemaPath before looking for it in storage
+          remoteFieldMapping.id = this.schemaPath + remoteFieldMapping.id
           const existingCoreFieldMapping = await this.getFieldMapping(remoteFieldMapping.id)
           if(existingCoreFieldMapping) {
             existingCoreFieldMapping.sourceName = remoteFieldMapping.sourceName

@@ -2,15 +2,16 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, Keyword } from './data-types';
+import { EarthstarDocPath, Keyword } from './schema';
 import { generateRandomString } from '../../utils/generator';
+import { StorageService } from '../storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AboutuserService {
 
-  constructor(private appService:AppService, private authService:AuthService) {
+  constructor(private authService:AuthService, private storageService:StorageService) {
 
   }
 
@@ -18,7 +19,7 @@ export class AboutuserService {
     //following the Earthstar spec for storing display names - https://github.com/earthstar-project/application-formats/blob/main/formats/about/SPEC_1.0.md
     const path = '/about/1.0/~' + this.authService.esSettings.author.address + '/displayName'
 
-    const doc = await this.appService.replica.getLatestDocAtPath(path)
+    const doc = await this.storageService.replica.getLatestDocAtPath(path)
     if(Earthstar.isErr(doc)) {
       console.error('error getting DisplayName',doc);
       alert('error loading Display Name')
@@ -40,7 +41,7 @@ export class AboutuserService {
     const path = '/about/1.0/~' + this.authService.esSettings.author.address + '/displayName'
     
     // Write to the replica.
-    const result = await this.appService.replica.set(this.authService.esSettings.author, {
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
       text: displayName,
       path: path,
     });

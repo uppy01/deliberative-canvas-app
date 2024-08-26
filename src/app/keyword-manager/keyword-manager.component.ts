@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { KeywordService } from '../services/data/keyword.service';
-import { Keyword } from '../services/data/data-types';
+import { Keyword } from '../services/data/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { AppService } from '../services/app.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-keyword-manager',
@@ -18,7 +19,7 @@ export class KeywordManagerComponent {
   keywordVariants:string = ''
   selectedKeyword:Keyword
 
-  constructor(private appService:AppService, private keywordService:KeywordService) {
+  constructor(private appService:AppService, private storageService:StorageService, private keywordService:KeywordService) {
 
   }
 
@@ -29,7 +30,7 @@ export class KeywordManagerComponent {
       isActive: false
     }
     
-    const storageConfiguredSubscription = this.appService.storageConfigured.subscribe((configured) => {
+    const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
       if(configured) {
         this.getAllKeywords()
       }

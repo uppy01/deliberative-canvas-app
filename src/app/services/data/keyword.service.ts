@@ -2,20 +2,26 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, Keyword } from './data-types';
+import { EarthstarDocPath, Keyword } from './schema';
 import { generateRandomString } from '../../utils/generator';
+import { StorageService } from '../storage.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class KeywordService {
 
-  constructor(private appService:AppService, private authService:AuthService) {
+  schemaName:string = 'exportlog'
+  schemaVersion:string = '1.0'
+  schemaPath:string
 
+
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+    this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
   }
 
   async getKeyword(id:EarthstarDocPath):Promise<Keyword | null> {
-    const doc = await this.appService.replica.getLatestDocAtPath(id)
+    const doc = await this.storageService.replica.getLatestDocAtPath(id)
     if(Earthstar.isErr(doc)) {
       console.error('error getting Keyword',doc);
       alert('error loading keyword')
@@ -35,8 +41,8 @@ export class KeywordService {
   }
 
   async getKeywords():Promise<Keyword[] | null> {
-    const docs = await this.appService.replica.queryDocs({
-      filter: { pathStartsWith: `/${this.appService.appName}/keyword/` }
+    const docs = await this.storageService.replica.queryDocs({
+      filter: { pathStartsWith: this.schemaPath }
     }) 
     if(Earthstar.isErr(docs)) {
       console.error('error getting all Keywords',docs);
@@ -60,7 +66,7 @@ export class KeywordService {
     //if we are creating a new Keyword then we assign an id, dateCreated and createdBy...
     if(!keyword.id) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
-      keyword.id = `/${this.appService.appName}/keyword/${Date.now()}__${generateRandomString(4)}`
+      keyword.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       keyword.dateCreated = Date.now()
       keyword.createdBy = this.appService.user
     }
@@ -68,7 +74,7 @@ export class KeywordService {
     keyword.updatedBy = this.appService.user
     
     // Write to the replica.
-    const result = await this.appService.replica.set(this.authService.esSettings.author, {
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
       text: JSON.stringify(keyword),
       path: keyword.id,
     });
@@ -85,7 +91,7 @@ export class KeywordService {
   }
 
   async deleteKeyword(id:EarthstarDocPath) {
-    const result = await this.appService.replica.wipeDocAtPath(this.authService.esSettings.author,id)
+    const result = await this.storageService.replica.wipeDocAtPath(this.authService.esSettings.author,id)
     if(Earthstar.isErr(result)) {
       console.error('error deleting Keyword',result);
       alert('ERROR DELETING KEYWORD!')

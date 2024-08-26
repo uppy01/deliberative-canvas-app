@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FieldmappingService } from '../services/data/fieldmapping.service';
-import { FieldMapping } from '../services/data/data-types';
+import { FieldMapping } from '../services/data/schema';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../services/app.service';

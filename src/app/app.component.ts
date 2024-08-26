@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import * as Earthstar from 'earthstar'
 import { AboutuserService } from './services/data/aboutuser.service';
 import { NgIf } from '@angular/common';
+import { StorageService } from './services/storage.service';
 
 @Component({
   selector: 'app-root',
@@ -20,8 +21,6 @@ import { NgIf } from '@angular/common';
 export class AppComponent {
   title = 'Deliberative Canvas App';
   context:string = 'staging'
-  
-  displayName:string = ''
 
   @ViewChild('linkDevice_div')
   linkDevice:ElementRef<HTMLDivElement>
@@ -31,14 +30,14 @@ export class AppComponent {
   linkDevice_component:LinkDeviceComponent
 
 
-  constructor(protected appService:AppService, protected authService:AuthService, private aboutUserService:AboutuserService, protected syncService:SyncService) {
+  constructor(protected appService:AppService, protected authService:AuthService, private storageService:StorageService, protected syncService:SyncService, private aboutUserService:AboutuserService) {
     
   }
 
   ngOnInit() {
-    const storageConfiguredSubscription = this.appService.storageConfigured.subscribe((configured) => {
+    const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
       if(configured) {
-        this.getDisplayName()
+
       }
     })
   }
@@ -56,14 +55,10 @@ export class AppComponent {
     }
   }
 
-  async getDisplayName() {
-    this.displayName = await this.aboutUserService.getDisplayName()
-  }
-
   async saveDisplayName() {
-    const result = await this.aboutUserService.saveDisplayName(this.displayName)
+    const result = await this.aboutUserService.saveDisplayName(this.appService.userDisplayName)
     if(result) {
-      this.getDisplayName()
+      await this.aboutUserService.getDisplayName()
     }
   }
 

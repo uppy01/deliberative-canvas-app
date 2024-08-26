@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import * as Earthstar from 'earthstar';
 import { BehaviorSubject } from 'rxjs';
 import { generateRandomString } from '../utils/generator';
-import { EarthstarProfile } from './data/data-types';
+import { EarthstarProfile } from './data/schema';
 
 @Injectable({
   providedIn: 'root'

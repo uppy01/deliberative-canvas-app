@@ -1,6 +1,6 @@
 import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../services/data/data-types';
+import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../services/data/schema';
 import { ExportlogService } from '../services/data/exportlog.service';
 import { SyncService } from '../services/sync.service';
 import { AuthService } from '../services/auth.service';
@@ -10,6 +10,7 @@ import { generateRandomString } from '../utils/generator';
 import { FormsModule } from '@angular/forms';
 import { KeywordService } from '../services/data/keyword.service';
 import { AppService } from '../services/app.service';
+import { StorageService } from '../services/storage.service';
 
 @Component({
   selector: 'app-processor-pipeline',
@@ -51,7 +52,7 @@ export class ProcessorPipelineComponent {
   showExport_btn:ElementRef<HTMLButtonElement>
   
 
-  constructor(private appService:AppService, private authService:AuthService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private syncService:SyncService) { }
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private syncService:SyncService) { }
 
   ngOnInit() {
     this.selectedExportLog = {
@@ -61,7 +62,7 @@ export class ProcessorPipelineComponent {
       fileExtension: ''
     }
 
-    const storageConfiguredSubscription = this.appService.storageConfigured.subscribe((configured) => {
+    const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
       if(configured) {
         this.getExportLogs()
         this.getKeywords()
