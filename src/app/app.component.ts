@@ -20,7 +20,7 @@ import { StorageService } from './services/storage.service';
 })
 export class AppComponent {
   title = 'Deliberative Canvas App';
-  context:string = 'staging'
+  context:string = 'dev'
 
   @ViewChild('linkDevice_div')
   linkDevice:ElementRef<HTMLDivElement>
