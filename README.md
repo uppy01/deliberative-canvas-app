@@ -39,3 +39,5 @@ https://earthstar-project.org/docs/what-is-it
 https://github.com/earthstar-project/earthstar
 
 There will also be an accompanying repository available soon for spinning up a Deliberative Canvas "sync server", which is based on [Earthstar server](https://earthstar-project.org/docs/server-guide).
+
+If you like putting labels on things, this app and the underlying Earthstar infrastructure aligns with the emerging [local-first software](https://localfirstweb.dev/) movement.
