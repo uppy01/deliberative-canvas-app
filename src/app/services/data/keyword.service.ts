@@ -11,7 +11,7 @@ import { StorageService } from '../storage.service';
 })
 export class KeywordService {
 
-  schemaName:string = 'exportlog'
+  schemaName:string = 'keyword'
   schemaVersion:string = '1.0'
   schemaPath:string
 
