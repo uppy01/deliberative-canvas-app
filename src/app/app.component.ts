@@ -2,11 +2,10 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { AppService } from './services/app.service';
-import { LinkDeviceComponent } from "./link-device/link-device.component";
+import { LinkDeviceComponent } from "./views/features/link-device/link-device.component";
 import Modal from 'bootstrap/js/dist/modal'
 import { SyncService } from './services/sync.service';
 import { FormsModule } from '@angular/forms';
-import * as Earthstar from 'earthstar'
 import { AboutuserService } from './services/data/aboutuser.service';
 import { NgIf } from '@angular/common';
 import { StorageService } from './services/storage.service';

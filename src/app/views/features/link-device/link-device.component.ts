@@ -1,13 +1,13 @@
 import { Component, ElementRef, Input, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { MyCrypto } from '../utils/mycrypto';
+import { MyCrypto } from '../../../utils/mycrypto';
 import qrcodegen from '@ribpay/qr-code-generator';
 import { toSvgString } from "@ribpay/qr-code-generator/utils";
 import { NgIf } from '@angular/common';
-import { AuthService } from '../services/auth.service';
-import { EarthstarProfile } from '../services/data/schema';
-import { AboutuserService } from '../services/data/aboutuser.service';
-import { SyncService } from '../services/sync.service';
+import { AuthService } from '../../../services/auth.service';
+import { EarthstarProfile } from '../../../services/data/schema';
+import { AboutuserService } from '../../../services/data/aboutuser.service';
+import { SyncService } from '../../../services/sync.service';
 
 @Component({
   selector: 'app-link-device',

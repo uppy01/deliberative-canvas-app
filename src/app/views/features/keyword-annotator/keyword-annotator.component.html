@@ -1,0 +1,24 @@
+<div class="d-flex align-vertical align-items-center justify-content-end mb-3">
+    <button class="btn btn-link" (click)="keywordsToggle(true)">activate all</button> | <button class="btn btn-link" (click)="keywordsToggle(false)">deactivate all</button>
+</div>
+<div *ngFor="let keyword of keywords" class="form-check form-switch mb-2">
+    <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="keyword.isActive">
+    <label class="form-check-label fs-5">"{{keyword.word}}" ({{keyword.variants.toString()}})</label>
+</div>
+<div class="row mt-5">
+    <div class="col-4">
+    <input type="text" class="form-control" style="text-align:right;" [(ngModel)]="newKeyword" placeholder="enter new keyword...">
+    </div>
+    <div class="col">
+    <input type="text" class="form-control" [(ngModel)]="newKeywordVariants" title="enter variations of keyword (comma-separated)..." placeholder="enter variations of keyword (comma-separated)...">
+    </div>
+    <div class="col-2"> 
+        <button class="btn btn-secondary" (click)="createNewKeyword()"><small>Add</small></button>
+    </div>
+</div>
+<div class="d-flex mt-5">
+    <button class="btn btn-success w-100 fs-5" data-bs-dismiss="modal" (click)="addKeywordsToResponses()">Apply</button>
+</div>
+<div class="d-flex justify-content-end mt-2">
+    <button class="btn btn-link" data-bs-dismiss="modal" (click)="removeAllKeywordsFromResponses()">remove applied keywords</button>
+</div>

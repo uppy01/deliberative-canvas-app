@@ -1,20 +1,20 @@
 import { Component } from '@angular/core';
-import { FieldmappingService } from '../services/data/fieldmapping.service';
-import { FieldMapping } from '../services/data/schema';
+import { FieldmappingService } from '../../services/data/fieldmapping.service';
+import { FieldMapping } from '../../services/data/schema';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AppService } from '../services/app.service';
+import { AppService } from '../../services/app.service';
 import Papa from 'papaparse';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'app-field-mapper',
+  selector: 'app-fieldmapping-manager',
   standalone: true,
   imports: [NgFor,NgIf,FormsModule,NgClass],
-  templateUrl: './field-mapper.component.html',
-  styleUrl: './field-mapper.component.css',
+  templateUrl: './fieldmapping-manager.component.html',
+  styleUrl: './fieldmapping-manager.component.css',
 })
-export class FieldMapperComponent {
+export class FieldmappingManagerComponent {
 
   Object = Object
   fieldMappings:FieldMapping[]

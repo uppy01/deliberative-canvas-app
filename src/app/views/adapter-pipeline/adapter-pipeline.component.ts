@@ -1,25 +1,27 @@
 import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../services/data/schema';
-import { ExportlogService } from '../services/data/exportlog.service';
-import { SyncService } from '../services/sync.service';
-import { AuthService } from '../services/auth.service';
-import { FieldmappingService } from '../services/data/fieldmapping.service';
+import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../../services/data/schema';
+import { ExportlogService } from '../../services/data/exportlog.service';
+import { SyncService } from '../../services/sync.service';
+import { AuthService } from '../../services/auth.service';
+import { FieldmappingService } from '../../services/data/fieldmapping.service';
 import Papa from 'papaparse';
-import { generateRandomString } from '../utils/generator';
+import { generateRandomString } from '../../utils/generator';
 import { FormsModule } from '@angular/forms';
-import { KeywordService } from '../services/data/keyword.service';
-import { AppService } from '../services/app.service';
-import { StorageService } from '../services/storage.service';
+import { KeywordService } from '../../services/data/keyword.service';
+import { AppService } from '../../services/app.service';
+import { StorageService } from '../../services/storage.service';
+import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword-annotator.component";
+import { AnnotatorService } from '../../services/annotator.service';
 
 @Component({
-  selector: 'app-processor-pipeline',
+  selector: 'app-adapter-pipeline',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule,DatePipe,NgStyle,NgClass],
-  templateUrl: './processor-pipeline.component.html',
-  styleUrl: './processor-pipeline.component.css',
+  imports: [NgFor, NgIf, FormsModule, DatePipe, NgStyle, NgClass, KeywordAnnotatorComponent],
+  templateUrl: './adapter-pipeline.component.html',
+  styleUrl: './adapter-pipeline.component.css',
 })
-export class ProcessorPipelineComponent {
+export class AdapterPipelineComponent {
 
   allExportLogs:ExportLog[]
   fieldMappings:FieldMapping[]
@@ -36,10 +38,6 @@ export class ProcessorPipelineComponent {
   remoteJSONExportURL:string = ''
   selectedExportLog:ExportLog
   updatingRemoteDataSource:boolean = false
-  newKeyword:string = ''
-  newKeywordVariants:string = ''
-
-
   progBarProgress:string = '0%';
 
   @ViewChild('showImportSource_btn')
@@ -52,9 +50,10 @@ export class ProcessorPipelineComponent {
   showExport_btn:ElementRef<HTMLButtonElement>
   
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private syncService:SyncService) { }
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private syncService:SyncService) { }
 
   ngOnInit() {
+    console.log('ngOnInit called')
     this.selectedExportLog = {
       title: '',
       description: '',
@@ -112,6 +111,7 @@ export class ProcessorPipelineComponent {
           keyword.isActive = this.appliedKeywords.find((appliedKeyword) => appliedKeyword.id === keyword.id) ? true : false
           await this.keywordService.saveKeyword(keyword)
         }
+        this.getKeywords()
       }
 
       const kumuJSONString = await this.selectedExportLog.fileData?.text()
@@ -246,69 +246,23 @@ export class ProcessorPipelineComponent {
     this.isImportInProgress = false
 
     if(this.updatingRemoteDataSource) {
-      this.addKeywordsToResponses()
-    }
-    
-  }
+      [this.responses,this.appliedKeywords] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
 
-  keywordsToggle(activateAll:boolean) {
-    this.keywords.forEach((keyword) => {
-      keyword.isActive = activateAll
-    })
-  }
-
-  async addKeywordsToResponses() {
-    this.appliedKeywords = this.keywords.filter((keyword) => keyword.isActive === true)
-    let responseKeywords
-    
-    if(this.appliedKeywords?.length > 0 && this.responses?.length > 0) {
-      this.responses.forEach((response,i) => {
-        responseKeywords = []
-        this.appliedKeywords.forEach((keyword) => {
-          if(response['Label']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
-            keyword.variants.some(variant => response['Label']?.toLowerCase().includes(variant.toLowerCase())) || 
-            response['Description']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
-            keyword.variants.some(variant => response['Description']?.toLowerCase().includes(variant.toLowerCase())))
-          {
-              responseKeywords.push(keyword.word)
-          }
-        })
-        this.responses[i]['keywords'] = responseKeywords
-      })
-      
-      console.log(this.responses)
-    }
-
-    //we save each keyword to persist the 'isActive' property that was (de)selected by the user...
-    for(let keyword of this.keywords) {
-      await this.keywordService.saveKeyword(keyword)
-    }
-
-    if(this.updatingRemoteDataSource) {
       this.saveExportLog()
     }
- 
+    
   }
 
-  removeAllKeywordsFromResponses() {
-    this.responses.map((response) => {
-      response['keywords'] = []
-    })
-    this.appliedKeywords = null
+  keywordsAnnotationComplete(responses:object[]) {
+    this.responses = responses
   }
 
-  async createNewKeyword() {
-    const keyword:Keyword = {
-      word: this.newKeyword,
-      variants: this.newKeywordVariants.length > 0 ? this.newKeywordVariants.split(',') : [],
-      isActive: true
-    }
-    const result = await this.keywordService.saveKeyword(keyword)
-    if(result) {
-      this.newKeyword = ''
-      this.newKeywordVariants = ''
-      this.getKeywords()
-    }
+  appliedKeyWordsUpdated(appliedKeywords:Keyword[]) {
+    this.appliedKeywords = appliedKeywords
+  }
+
+  newKeywordCreated() {
+    this.getKeywords()
   }
 
   async exportAsKumuJSON() {

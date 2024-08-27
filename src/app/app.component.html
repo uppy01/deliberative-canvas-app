@@ -11,7 +11,7 @@
         </a>
         <ul class="dropdown-menu dropdown-menu-end">
           <li><a class="dropdown-item" routerLink="/">Home</a></li>
-          <li><a class="dropdown-item" routerLink="/field-mapper">Field Mappings</a></li>
+          <li><a class="dropdown-item" routerLink="/fieldmapping-manager">Field Mappings</a></li>
           <li><a class="dropdown-item" routerLink="/keyword-manager">Keywords</a></li>
           <li><hr class="dropdown-divider"></li>
           <li *ngIf="syncService.syncServerURL !== ''"><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>

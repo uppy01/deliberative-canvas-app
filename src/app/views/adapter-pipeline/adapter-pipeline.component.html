@@ -72,7 +72,7 @@
                     </div>
                 </div>
                 <div *ngIf="responses" class="v-stack justify-content-center">
-                    <button class="btn btn-primary fs-4 w-25 mb-4" data-bs-toggle="modal" data-bs-target="#keywordParser_div">Add Keywords</button>
+                    <button class="btn btn-primary fs-4 w-25 mb-4" data-bs-toggle="modal" data-bs-target="#keywordAnnotator_div">Add Keywords</button>
                     <ul class="list-group list-group-flush">
                         <li *ngFor="let response of responses" class="list-group-item">({{response['date']}}) (<b>{{response['group-informed-consensus']}}</b>) {{response['Label']}} (<b>{{response['keywords']}}</b>)</li>
                     </ul>
@@ -131,7 +131,7 @@
 
 </div>
 
-<div id="keywordParser_div" class="modal" tabindex="-1">
+<div id="keywordAnnotator_div" class="modal" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header justify-content-between">
@@ -139,30 +139,7 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-            <div class="d-flex align-vertical align-items-center justify-content-end mb-3">
-                <button class="btn btn-link" (click)="keywordsToggle(true)">activate all</button> | <button class="btn btn-link" (click)="keywordsToggle(false)">deactivate all</button>
-            </div>
-            <div *ngFor="let keyword of keywords" class="form-check form-switch mb-2">
-                <input class="form-check-input" type="checkbox" role="switch" [(ngModel)]="keyword.isActive">
-                <label class="form-check-label fs-5">"{{keyword.word}}" ({{keyword.variants.toString()}})</label>
-            </div>
-            <div class="row mt-5">
-                <div class="col-4">
-                <input type="text" class="form-control" style="text-align:right;" [(ngModel)]="newKeyword" placeholder="enter new keyword...">
-                </div>
-                <div class="col">
-                <input type="text" class="form-control" [(ngModel)]="newKeywordVariants" title="enter variations of keyword (comma-separated)..." placeholder="enter variations of keyword (comma-separated)...">
-                </div>
-                <div class="col-2"> 
-                    <button class="btn btn-secondary" (click)="createNewKeyword()"><small>Add</small></button>
-                </div>
-            </div>
-            <div class="d-flex mt-5">
-                <button class="btn btn-success w-100 fs-5" data-bs-dismiss="modal" (click)="addKeywordsToResponses()">Apply</button>
-            </div>
-            <div class="d-flex justify-content-end mt-2">
-                <button class="btn btn-link" data-bs-dismiss="modal" (click)="removeAllKeywordsFromResponses()">remove applied keywords</button>
-            </div>
+            <app-keyword-annotator [responses]="responses" [keywords]="keywords" [appliedKeywords]="appliedKeywords" (keywordsAnnotationComplete)="keywordsAnnotationComplete($event)" (appliedKeywordsUpdated)="appliedKeyWordsUpdated($event)" (newKeywordCreated)="newKeywordCreated()"></app-keyword-annotator>
         </div>
         <div class="modal-footer justify-content-between">
           

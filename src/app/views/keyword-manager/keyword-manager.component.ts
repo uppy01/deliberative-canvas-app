@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { KeywordService } from '../services/data/keyword.service';
-import { Keyword } from '../services/data/schema';
+import { KeywordService } from '../../services/data/keyword.service';
+import { Keyword } from '../../services/data/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
-import { AppService } from '../services/app.service';
-import { StorageService } from '../services/storage.service';
+import { AppService } from '../../services/app.service';
+import { StorageService } from '../../services/storage.service';
 
 @Component({
   selector: 'app-keyword-manager',
