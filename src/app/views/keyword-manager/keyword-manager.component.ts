@@ -68,6 +68,7 @@ export class KeywordManagerComponent {
       variants: [],
       isActive: false
     }
+    this.keywordVariants = ''
   }
 
   async removeKeyword(keywordID) {

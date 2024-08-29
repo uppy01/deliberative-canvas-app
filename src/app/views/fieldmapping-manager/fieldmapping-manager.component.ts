@@ -140,26 +140,34 @@ export class FieldmappingManagerComponent {
   }
 
   async addField(fieldMapping) {  
-    this.activeFieldMappingID = fieldMapping.id
-    
-    if(this.sourceFieldBeingUpdated !== '') {
-      delete fieldMapping.fields[this.sourceFieldBeingUpdated]
-    }
-    
-    const existingFields = fieldMapping.fields
-    let newField = {}
-    newField[this.activeSourceField] = this.activeExportField
-    const mergedFields = {...existingFields, ...newField}
-    console.log(mergedFields)
-
-    fieldMapping.fields = mergedFields
-    const result = await this.fieldMappingService.saveFieldMapping(fieldMapping)
-    if(result) {
-      this.sourceFieldBeingUpdated = ''
-      this.activeSourceField = ''
+    if(this.activeExportField?.toLowerCase() === 'keywords') {
       this.activeExportField = ''
-      this.getFieldMappings()
+      alert('"keywords" is a reserved export field name - please enter a different export field name')
     }
+    else {
+      this.activeFieldMappingID = fieldMapping.id
+    
+      if(this.sourceFieldBeingUpdated !== '') {
+        delete fieldMapping.fields[this.sourceFieldBeingUpdated]
+      }
+      
+      const existingFields = fieldMapping.fields
+      let newField = {}
+      newField[this.activeSourceField] = this.activeExportField
+      const mergedFields = {...existingFields, ...newField}
+      console.log(mergedFields)
+
+      fieldMapping.fields = mergedFields
+      const result = await this.fieldMappingService.saveFieldMapping(fieldMapping)
+      if(result) {
+        this.sourceFieldBeingUpdated = ''
+        this.activeSourceField = ''
+        this.activeExportField = ''
+        this.getFieldMappings()
+      }
+    }
+
+    
   }
 
   async removeField(fieldMapping,key) {

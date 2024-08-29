@@ -10,13 +10,13 @@ import { AboutuserService } from '../../../services/data/aboutuser.service';
 import { SyncService } from '../../../services/sync.service';
 
 @Component({
-  selector: 'app-link-device',
+  selector: 'app-link-profile',
   standalone: true,
   imports: [FormsModule,NgIf],
-  templateUrl: './link-device.component.html',
-  styleUrl: './link-device.component.css'
+  templateUrl: './link-profile.component.html',
+  styleUrl: './link-profile.component.css'
 })
-export class LinkDeviceComponent {
+export class LinkProfileComponent {
 
   linkPassword:string = ''
   linkToSend:string = ''
@@ -37,7 +37,7 @@ export class LinkDeviceComponent {
   constructor(private authService:AuthService, private syncService:SyncService, private aboutUserService:AboutuserService) {
     this.encryptedLink = window.location.hash?.slice(1)
     const urlParams = new URLSearchParams(window.location.search)
-    this.receivingLink = urlParams.get('linkdevice') ? true : false
+    this.receivingLink = urlParams.get('linkprofile') ? true : false
   }
 
   async generateEncryptedLink() {
@@ -87,7 +87,7 @@ export class LinkDeviceComponent {
   }
 
   generateQRCode() {
-    this.linkToSend = window.location.protocol + '//' + window.location.host + '?linkdevice=true#' + this.encryptedLink
+    this.linkToSend = window.location.protocol + '//' + window.location.host + '?linkprofile=true#' + this.encryptedLink
     console.log(this.linkToSend)
     const qrCode = this.myQRCodeGenerator.encodeText(this.linkToSend, this.myQRCodeGenerator.Ecc.HIGH)
     const qrCodeSVG = toSvgString(qrCode,1,"#FFFFFF","#000000")

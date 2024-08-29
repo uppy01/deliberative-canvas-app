@@ -13,6 +13,7 @@ import { AppService } from '../../services/app.service';
 import { StorageService } from '../../services/storage.service';
 import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword-annotator.component";
 import { AnnotatorService } from '../../services/annotator.service';
+import { Router, Event, NavigationEnd } from '@angular/router';
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -50,7 +51,7 @@ export class AdapterPipelineComponent {
   showExport_btn:ElementRef<HTMLButtonElement>
   
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private syncService:SyncService) { }
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')
@@ -73,6 +74,15 @@ export class AdapterPipelineComponent {
         this.getFieldMappings()
       }
     })
+
+    //as we are re-using this route/component, this is to overcome ngOnInit() not firing when navigating back to this component route...
+    this.router.events.subscribe((event:Event) => {
+        if(event instanceof NavigationEnd && this.router.url === '/') {
+          console.log('navigated to adapter-pipeline component route')
+          this.getKeywords()
+          this.getFieldMappings()
+        }
+      });
   }
 
   async getExportLogs() {

@@ -109,7 +109,7 @@
                                 <label for="exportDescription_ta" class="form-label">Description</label>
                                 <textarea class="form-control" id="exportDescription_ta" rows="3" [(ngModel)]="selectedExportLog.description" placeholder="enter description..."></textarea>
                             </div>
-                            <div class="d-flex align-items-middle align-vertical justify-content-between mb-3">
+                            <div *ngIf="syncService.syncServerURL !== ''" class="d-flex align-items-middle align-vertical justify-content-between mb-3">
                                 <div class="w-100">
                                     <label for="remoteJSONExportURL_input" class="form-label">Remote JSON URL</label>
                                     <div class="input-group">

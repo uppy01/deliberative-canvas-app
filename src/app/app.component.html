@@ -15,7 +15,7 @@
           <li><a class="dropdown-item" routerLink="/keyword-manager">Keywords</a></li>
           <li><hr class="dropdown-divider"></li>
           <li *ngIf="syncService.syncServerURL !== ''"><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
-          <li><a class="dropdown-item" (click)="createLink()">Link Device</a></li>
+          <li><a class="dropdown-item" (click)="createProfileLink()">Link Profile</a></li>
           <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileDetails_div">Profile Details</a></li>
         </ul>
       </div>
@@ -24,15 +24,15 @@
 </nav>
 
 
-<div #linkDevice_div id="linkDevice_div" class="modal" tabindex="-1">
+<div #linkProfile_div id="linkProfile_div" class="modal" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header justify-content-between">
-        <h5 class="modal-title">Linking Devices</h5>
+        <h5 class="modal-title">Profile Linking</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <app-link-device [displayName]="appService.userDisplayName"></app-link-device>
+        <app-link-profile [displayName]="appService.userDisplayName"></app-link-profile>
       </div>
       <div class="modal-footer justify-content-between">
         

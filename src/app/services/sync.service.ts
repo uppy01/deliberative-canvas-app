@@ -8,7 +8,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class SyncService {
 
-  syncServerURL:string = '' //'https://delib-canvas.wf-apps.net'
+  syncServerURL:string = ''
   peer:Earthstar.Peer
   syncInProgress:boolean = false
   syncCompletedSuccessfully:BehaviorSubject<boolean> = new BehaviorSubject(false)
