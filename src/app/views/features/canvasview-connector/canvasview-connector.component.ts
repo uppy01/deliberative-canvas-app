@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CanvasView, EarthstarDocPath, ExportLog, KumuEmbed, KumuMap } from '../../../services/data/schema';
+import { CanvasView, EarthstarDocPath, ExportLog, KumuEmbed } from '../../../services/data/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { CanvasviewService } from '../../../services/data/canvasview.service';

@@ -1,6 +1,6 @@
 import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { EarthstarDocPath, ExportLog, FieldMapping, Keyword, KumuMap } from '../../services/data/schema';
+import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../../services/data/schema';
 import { ExportlogService } from '../../services/data/exportlog.service';
 import { SyncService } from '../../services/sync.service';
 import { AuthService } from '../../services/auth.service';
