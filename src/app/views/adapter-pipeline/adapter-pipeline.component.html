@@ -118,6 +118,7 @@
                                     </div>
                                 </div>
                             </div>
+                            <button *ngIf="selectedExportLog.id" class="btn btn-sm btn-primary mt-3" data-bs-target="#canvasViews_div" data-bs-toggle="modal"><i class="bi bi-window-stack"></i> Canvases where this data can be viewed...</button>                   
                         </div>
                         <div class="card-footer d-flex justify-content-between">
                             <button class="btn btn-success" (click)="saveExportLog()" [disabled]="!responses || responses.length === 0 || selectedExportLog?.title === ''">Save</button>
@@ -140,6 +141,20 @@
         </div>
         <div class="modal-body">
             <app-keyword-annotator [responses]="responses" [keywords]="keywords" [appliedKeywords]="appliedKeywords" (keywordsAnnotationComplete)="keywordsAnnotationComplete($event)" (appliedKeywordsUpdated)="appliedKeyWordsUpdated($event)" (newKeywordCreated)="newKeywordCreated()"></app-keyword-annotator>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div id="canvasViews_div" class="modal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header justify-content-between">
+          <h4 class="modal-title">Canvas Views</h4>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+            <app-canvasview-connector [exportLogID]="selectedExportLog.id"></app-canvasview-connector>
         </div>
         <div class="modal-footer justify-content-between">
           

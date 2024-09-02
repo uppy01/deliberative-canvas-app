@@ -16,6 +16,14 @@ export class SyncService {
 
   constructor(private authService:AuthService) { 
     this.syncServerURL = this.authService.esSettings.servers[0] ? this.authService.esSettings.servers[0] : ''
+    this.stripForwardSlash()
+  }
+
+  stripForwardSlash() {
+    //when Earthstar adds servers to localStorage it automatically appends a '/' to the end, which we don't want as it can mess things up when we concatenate syncServerURL and document paths (which start with a '/')...
+    if(this.syncServerURL !== '' && this.syncServerURL.charAt(this.syncServerURL.length-1) === '/') {
+      this.syncServerURL = this.syncServerURL.slice(0,this.syncServerURL.length-1)
+    }
   }
 
   async configureSync(replica:Earthstar.Replica) {
@@ -46,7 +54,7 @@ export class SyncService {
     }
   }
 
-  addSyncServer(url?:string) {
+  addSyncServer(url:string) {
     if(this.authService.esSettings.servers?.length > 0) {
       //remove all existing servers as we only want a max of 1 server (the new server about to be added)
       for(let server of this.authService.esSettings.servers) {
@@ -54,19 +62,20 @@ export class SyncService {
       }
     }
 
-    const result = this.authService.esSettings.addServer(url ? url : this.syncServerURL)
+    const result = this.authService.esSettings.addServer(url)
       if(Earthstar.isErr(result)) {
         console.error('error adding sync server',result);
         alert('error adding sync server')
       }
       else {
-        if(url) this.syncServerURL = url
+        this.syncServerURL = this.authService.esSettings.servers[0]
+        this.stripForwardSlash()
         this.doSync()
       }
   }
 
-  removeSyncServer(url?:string) {
-    const result = this.authService.esSettings.removeServer(url ? url : this.syncServerURL)
+  removeSyncServer(url:string) {
+    const result = this.authService.esSettings.removeServer(url)
     if(Earthstar.isErr(result)) {
       console.error('error removing sync server',result);
       alert('error removing sync server')

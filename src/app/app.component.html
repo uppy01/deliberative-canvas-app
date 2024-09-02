@@ -68,8 +68,8 @@
           <label class="form-label" for="syncServerURL_input">Sync Server URL:</label>
           <div class="input-group">
             <input class="form-control" id="syncServerURL_input" [(ngModel)]="syncService.syncServerURL" placeholder="enter the URL for the server you want to use for syncing data..."/>
-            <button class="btn btn-success" (click)="syncService.addSyncServer()" data-bs-dismiss="modal" [disabled]="syncService.syncServerURL === ''">save</button>
-            <button class="btn btn-link" (click)="syncService.removeSyncServer()" [disabled]="authService.esSettings.servers?.length === 0" >remove</button>
+            <button class="btn btn-success" (click)="syncService.addSyncServer(syncService.syncServerURL)" data-bs-dismiss="modal" [disabled]="syncService.syncServerURL === ''">save</button>
+            <button class="btn btn-link" (click)="syncService.removeSyncServer(syncService.syncServerURL)" [disabled]="authService.esSettings.servers?.length === 0" >remove</button>
           </div>
         </div>
       </div>

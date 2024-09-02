@@ -8,4 +8,5 @@
     - referencing bootstrap classes in javascript messes with dropdowns, popovers etc - https://github.com/twbs/bootstrap/issues/32749
 - to build and deploy using AWS Amplify hosting, need to manually set node.js version to minimum required by Angular compiler (currently v18.19.1)
     - do this in `hosting > build settings > build image settings > live package updates` section of the Amplify console.
-
+- not sure if this should happen, but in kumu-links (child component) when you update any of the kumuMap object properties through the UI, the changes automatically bubble up to the selectedKumuMap object in adapter-pipeline (parent component)
+    - based on my understanding of Angular parent-child conventions, this two-way binding shouldn't happen and instead should require having to emit an event from kumu-links that adapter-pipeline then listens for and manually updates selectedKumuMap...🤔

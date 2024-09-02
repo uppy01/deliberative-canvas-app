@@ -1,6 +1,6 @@
 import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../../services/data/schema';
+import { EarthstarDocPath, ExportLog, FieldMapping, Keyword, KumuMap } from '../../services/data/schema';
 import { ExportlogService } from '../../services/data/exportlog.service';
 import { SyncService } from '../../services/sync.service';
 import { AuthService } from '../../services/auth.service';
@@ -14,11 +14,12 @@ import { StorageService } from '../../services/storage.service';
 import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword-annotator.component";
 import { AnnotatorService } from '../../services/annotator.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
+import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
 
 @Component({
   selector: 'app-adapter-pipeline',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, DatePipe, NgStyle, NgClass, KeywordAnnotatorComponent],
+  imports: [NgFor, NgIf, FormsModule, DatePipe, NgStyle, NgClass, KeywordAnnotatorComponent, CanvasviewConnectorComponent],
   templateUrl: './adapter-pipeline.component.html',
   styleUrl: './adapter-pipeline.component.css',
 })
@@ -316,7 +317,7 @@ export class AdapterPipelineComponent {
   }
 
   download(kumuJSONString:string, fileExtension:string) {
-    const downloadFileName = this.importedFileName.replace('.','-') + '.' + fileExtension
+    const downloadFileName = this.importedFileName.replaceAll('.','-') + '.' + fileExtension
     const blob = new Blob([kumuJSONString], {type: `text/${fileExtension}`});
 
     let elem = window.document.createElement('a');

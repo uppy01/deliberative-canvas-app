@@ -1,0 +1,61 @@
+<div *ngIf="!showCanvasViewEditor">
+    <div class="list-group mt-2">
+        <a *ngFor="let canvasView of connectedCanvasViews" (click)="editCanvasView(canvasView)" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+                <h6 class="mb-1">{{canvasView.title}}</h6>
+            </div>
+            <p class="mb-1">{{canvasView.description.length > 55 ? canvasView.description.slice(0,55) + '...' : canvasView.description}}</p>
+        </a>
+    </div>
+
+    <div class="btn-group d-flex mt-3">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">add existing canvas...</button>
+        <ul class="dropdown-menu w-100">
+            <li *ngFor="let canvasView of disconnectedCanvasViews">
+                <a class="dropdown-item" (click)="addCanvasViewtoExportLog(canvasView)"><small>{{canvasView.title}}</small></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<button *ngIf="!showCanvasViewEditor" class="btn btn-sm btn-outline-success w-100 mt-3" (click)="createNewCanvasView()" ><i class="bi bi-plus-circle"></i> create new</button>
+
+<div *ngIf="showCanvasViewEditor">
+    <div class="d-flex justify-content-end mb-3">
+        <button *ngIf="selectedCanvasView.id && checkCanvasViewContainsExportLog(selectedCanvasView)" class="btn btn-outline-warning" (click)="removeCanvasViewFromExportLog(selectedCanvasView)">remove canvas view</button>
+    </div>
+    <div class="mb-3">
+        <label for="canvasViewTitle_input" class="form-label">Title</label>
+        <input type="text" class="form-control" id="canvasViewTitle_input" [(ngModel)]="selectedCanvasView.title" placeholder="enter a title...">
+    </div>
+    <div class="mb-3">
+        <label for="canvasViewDescription_ta" class="form-label">Description</label>
+        <textarea class="form-control" id="canvasViewDescription_ta" rows="2" [(ngModel)]="selectedCanvasView.description" placeholder="enter description and/or notes..."></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="canvasViewEmbedURL_input" class="form-label">Embed Link</label>
+        <div class="input-group">
+            <input type="text" class="form-control" id="canvasViewEmbedURL_input" [(ngModel)]="selectedCanvasView.embedURL" placeholder="enter a canvas embed URL...">
+            <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.embedURL)" [disabled]="selectedCanvasView.embedURL === ''"><i class="bi bi-clipboard"></i></button>
+            <button class="btn btn-light" [disabled]="selectedCanvasView.embedURL === ''"><a [href]="selectedCanvasView.embedURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
+        </div>
+    </div>
+    <div class="mb-3">
+        <label for="canvasViewProjectURL_input" class="form-label">Project Link</label>
+        <div class="input-group">
+            <input type="text" class="form-control" id="canvasViewProjectURL_input" [(ngModel)]="selectedCanvasView.projectURL" placeholder="enter the (Kumu) project URL that the canvas belongs to...">
+            <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.projectURL)" [disabled]="selectedCanvasView.projectURL === ''"><i class="bi bi-clipboard"></i></button>
+            <button class="btn btn-light" [disabled]="selectedCanvasView.projectURL === ''"><a [href]="selectedCanvasView.projectURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
+        </div>
+    </div>
+    <div class="d-flex justify-content-between">
+        <div>
+            <button class="btn btn-primary" (click)="saveCanvasView()" [disabled]="selectedCanvasView.title === ''">{{selectedCanvasView.id ? 'Update' : 'Create'}}</button>
+            <button class="btn btn-sm btn-link" (click)="cancelEdit()">cancel</button>
+        </div>
+        <div class="btn-group" role="group">
+            <button class="btn btn-sm btn-light" (click)="downloadCanvasViewJSON()"><i class="bi bi-filetype-json"></i> Download JSON File</button>
+            <button *ngIf="syncService.syncServerURL !== '' && selectedCanvasView.id" class="btn btn-sm btn-light" (click)="copyToClipboard(remoteJSONCanvasViewURL)"><i class="bi bi-clipboard"></i> Remote JSON URL</button>
+        </div>
+    </div>
+</div>

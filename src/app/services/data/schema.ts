@@ -10,6 +10,24 @@ export type EarthstarProfile = {
     syncServerURL?:string
 }
 
+export type KumuEmbed = {
+    embedURL:string,
+    description?:string
+}
+
+export type Deliberation = {
+    id?:EarthstarDocPath,
+    title:string,
+    description?:string,
+    startDate?:Date | number,
+    endDate?:Date | number,
+    tags?:string[],
+    dateCreated?:Date | number,
+    dateUpdated?:Date | number,
+    createdBy?:EarthstarAuthorAddress,
+    updatedBy?:EarthstarAuthorAddress
+}
+
 //version 1.0
 export type FieldMapping = {
     id?:EarthstarDocPath,
@@ -45,6 +63,22 @@ export type Keyword = {
     word:string,
     variants?:string[]
     isActive:boolean
+    dateCreated?:Date | number,
+    dateUpdated?:Date | number,
+    createdBy?:EarthstarAuthorAddress,
+    updatedBy?:EarthstarAuthorAddress
+}
+
+//version 1.0
+export type CanvasView = {
+    id?:EarthstarDocPath,
+    title:string,
+    description?:string,
+    embedURL?:string,
+    projectURL?:string,
+    exportLogIDs:string[],
+    fileExtension?:string,
+    fileData?:Blob,
     dateCreated?:Date | number,
     dateUpdated?:Date | number,
     createdBy?:EarthstarAuthorAddress,
