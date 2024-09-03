@@ -49,17 +49,15 @@ export class KeywordAnnotatorComponent {
     })
   }
 
+  allKeywordsDeselected():boolean {
+    return this.keywords?.find((keyword) => keyword.isActive === true) ? false : true
+  }
+
   async addKeywordsToResponses() {
     [this.responses,this.appliedKeywords] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
 
     this.keywordsAnnotationComplete.emit(this.responses)
     this.appliedKeywordsUpdated.emit(this.appliedKeywords)
-    
-    //we save each keyword to persist the 'isActive' property that was (de)selected by the user...
-    for(let keyword of this.keywords) {
-      await this.keywordService.saveKeyword(keyword)
-    }
- 
   }
 
   removeAllKeywordsFromResponses() {

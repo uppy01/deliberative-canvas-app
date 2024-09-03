@@ -15,6 +15,7 @@ import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword
 import { AnnotatorService } from '../../services/annotator.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
 import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
+import { CascadeService } from '../../services/data/cascade.service';
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -52,7 +53,7 @@ export class AdapterPipelineComponent {
   showExport_btn:ElementRef<HTMLButtonElement>
   
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private cascadeService:CascadeService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')
@@ -81,7 +82,7 @@ export class AdapterPipelineComponent {
         if(event instanceof NavigationEnd && this.router.url === '/') {
           console.log('navigated to adapter-pipeline component route')
           this.getKeywords()
-          this.getFieldMappings()
+          this.getFieldMappings(true)
         }
       });
   }
@@ -97,6 +98,8 @@ export class AdapterPipelineComponent {
     if(result) {
       this.selectedExportLog = result
       console.log(this.selectedExportLog)
+
+      this.sourceLocalFile = null
 
       this.importedFileName = this.selectedExportLog.fileName
 
@@ -116,15 +119,6 @@ export class AdapterPipelineComponent {
       this.appliedKeywords = this.selectedExportLog.appliedKeywordIDs ? this.keywords.filter((keyword) => this.selectedExportLog.appliedKeywordIDs.toString().includes(keyword.id)) : null
       console.log('appliedKeyWords',this.appliedKeywords)
 
-      if(this.appliedKeywords && this.appliedKeywords.length > 0) {
-        //update the 'isActive' property for all keywords based on the appliedKeywords
-        for(let keyword of this.keywords) {
-          keyword.isActive = this.appliedKeywords.find((appliedKeyword) => appliedKeyword.id === keyword.id) ? true : false
-          await this.keywordService.saveKeyword(keyword)
-        }
-        this.getKeywords()
-      }
-
       const kumuJSONString = await this.selectedExportLog.fileData?.text()
       if(kumuJSONString) {
         const kumuJSON = JSON.parse(kumuJSONString)
@@ -138,20 +132,23 @@ export class AdapterPipelineComponent {
     
   }
 
-  async getFieldMappings() {
+  async getFieldMappings(reUsingComponent:boolean=false) {
     this.fieldMappings = await this.fieldMappingService.getFieldMappings()
+    this.fieldMappings.sort((a,b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime())
     console.log(this.fieldMappings)
 
     if(!this.fieldMappings || this.fieldMappings.length === 0) {
       alert('no field mappings found')
+      this.selectedFieldMapping = null
     }
-    else {
+    else if(!reUsingComponent) {
       this.selectedFieldMapping = this.fieldMappings[0]
     }
   }
 
   async getKeywords() {
     this.keywords = await this.keywordService.getKeywords()
+    this.keywords.sort((a,b) => a.word.toLowerCase() < b.word.toLowerCase() ? -1 : 1 )
   }
 
   resetToNew() {
@@ -188,6 +185,11 @@ export class AdapterPipelineComponent {
     else {
       this.selectedFieldMapping = null
     }
+
+    //changing the field mapping source for a previously saved export that has a remote source file clears the response data so that it can be re-imported using the newly assigned field mapping source..
+    if(this.selectedExportLog.id && this.isRemoteSourceFile && this.responses !== null) {
+      this.responses = null
+    }
   }
 
   localFileSelected(event) {
@@ -208,6 +210,11 @@ export class AdapterPipelineComponent {
     this.importedFileName = 'Remote Source File' //TODO
     
     this.responses = null
+  }
+
+  importSourceData() {
+    this.appliedKeywords = null
+    this.parseFile()
   }
 
   parseFile() {
@@ -257,11 +264,25 @@ export class AdapterPipelineComponent {
     this.isImportInProgress = false
 
     if(this.updatingRemoteDataSource) {
-      [this.responses,this.appliedKeywords] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
+      this.updateKeywordsActiveState();
+      [ this.responses ] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
 
       this.saveExportLog()
     }
     
+  }
+
+  showKeywordAnnotator() {
+    this.updateKeywordsActiveState()
+  }
+
+  /**
+   * update the 'isActive' property for all keywords based on the appliedKeywords
+   */ 
+  updateKeywordsActiveState() {
+    for(let keyword of this.keywords) {
+      keyword.isActive = this.appliedKeywords?.find((appliedKeyword) => appliedKeyword.id === keyword.id) ? true : false
+    }
   }
 
   keywordsAnnotationComplete(responses:object[]) {
@@ -289,23 +310,24 @@ export class AdapterPipelineComponent {
     const kumuJSONString = this.generateKumuJSONString()
     const fileExtension = 'json'
     
-    let exportLogToSave:ExportLog = {
-      id: this.selectedExportLog ? this.selectedExportLog.id : null,
-      title: this.selectedExportLog.title,
-      description: this.selectedExportLog.description,
-      fileName: this.importedFileName,
-      fileExtension: fileExtension,
-      fileData: new Blob([kumuJSONString], {type: `text/${fileExtension}`}),
-      importSourceURL: this.sourceURL ? this.sourceURL : null,
-      appliedFieldMappingID: this.selectedFieldMapping ? this.selectedFieldMapping.id : null,
-      appliedKeywordIDs: this.appliedKeywords ? this.appliedKeywords.map((keyword) => keyword.id) : null
-    }
- 
+    let exportLogToSave:ExportLog = this.selectedExportLog
+    exportLogToSave.fileName = this.importedFileName
+    exportLogToSave.fileExtension = fileExtension
+    exportLogToSave.fileData = new Blob([kumuJSONString], {type: `text/${fileExtension}`})
+    exportLogToSave.importSourceURL = this.sourceURL
+    exportLogToSave.appliedFieldMappingID = this.selectedFieldMapping ? this.selectedFieldMapping.id : null
+    exportLogToSave.appliedKeywordIDs = this.appliedKeywords ? this.appliedKeywords.map((keyword) => keyword.id) : null
 
-    const result = await this.exportlogService.saveExportLog(exportLogToSave)
-    if(result) {
-      this.selectedExportLog = await this.exportlogService.getExportLog(result['doc']['path'])
-      this.remoteJSONExportURL = this.syncService.syncServerURL + result['doc']['path'] + '?share=' + this.authService.esSettings.shares[0]
+    const savedExportLogID = await this.exportlogService.saveExportLog(exportLogToSave)
+    if(savedExportLogID) {
+      //cascade changes if updating the exportLog...
+      if(this.selectedExportLog.id) {
+        this.cascadeService.exportLogMutation(this.selectedExportLog.id,'UPDATE')
+      }
+      
+      this.selectedExportLog = await this.exportlogService.getExportLog(savedExportLogID)
+      console.log('just saved exportLog',this.selectedExportLog)
+      this.remoteJSONExportURL = this.syncService.syncServerURL + savedExportLogID + '?share=' + this.authService.esSettings.shares[0]
       
       await this.getExportLogs()
       this.syncService.doSync()
@@ -339,7 +361,7 @@ export class AdapterPipelineComponent {
     await navigator.clipboard.writeText(this.remoteJSONExportURL)
   }
 
-  updateSyncRemoteSource() {
+  updateAndSyncWithRemoteSource() {
     this.updatingRemoteDataSource = true;
     this.responses = null
     this.parseFile()
@@ -349,12 +371,22 @@ export class AdapterPipelineComponent {
     this.progBarProgress = progress
   }
 
+  clearResponses() {
+    this.responses = null
+    this.appliedKeywords = null
+    this.updateKeywordsActiveState()
+  }
+
   async removeExportLog() {
     if(confirm("Confirm you wish to delete...")) {
       const result = await this.exportlogService.deleteExportLog(this.selectedExportLog.id)
       if(result) {
+        //cascade changes for exportLog...
+        await this.cascadeService.exportLogMutation(this.selectedExportLog.id,'DELETE')
         this.resetToNew()
         this.getExportLogs()
+
+        this.syncService.doSync()
       }
     }
   }

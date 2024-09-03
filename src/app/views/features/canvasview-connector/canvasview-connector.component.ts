@@ -1,11 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { CanvasView, EarthstarDocPath, ExportLog, KumuEmbed } from '../../../services/data/schema';
+import { CanvasView, EarthstarDocPath } from '../../../services/data/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { CanvasviewService } from '../../../services/data/canvasview.service';
 import { ExportlogService } from '../../../services/data/exportlog.service';
 import { SyncService } from '../../../services/sync.service';
 import { AuthService } from '../../../services/auth.service';
+import { CascadeService } from '../../../services/data/cascade.service';
 
 @Component({
   selector: 'app-canvasview-connector',
@@ -81,12 +82,12 @@ export class CanvasviewConnectorComponent {
     this.showCanvasViewEditor = false;
   }
 
-  async addCanvasViewtoExportLog(canvasView:CanvasView) {
+  addCanvasViewtoExportLog(canvasView:CanvasView) {
     this.selectedCanvasView = canvasView
     this.saveCanvasView()
   }
 
-  async removeCanvasViewFromExportLog(canvasView:CanvasView) {
+  removeCanvasViewFromExportLog(canvasView:CanvasView) {
     this.saveCanvasView(true)
   }
 
@@ -110,7 +111,7 @@ export class CanvasviewConnectorComponent {
       this.showCanvasViewEditor = false
       this.initSelectedCanvasView()
       this.getCanvasViews()
-      //we want to sync to make sure the remote JSON URL serves the updated CanvasView content...
+      //we want to sync with the server to make sure the remote JSON URL serves the updated CanvasView content...
       this.syncService.doSync()
     }
     else {

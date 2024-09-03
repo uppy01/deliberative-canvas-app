@@ -6,6 +6,7 @@ import { EarthstarDocPath, FieldMapping } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage.service';
+import * as _ from 'lodash';
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +50,9 @@ export class FieldmappingService {
     }
   }
 
+  /**
+   * only returns FieldMapping's for this class' specified schemaVersion - those saved under a different schema version will not be returned
+   */
   async getFieldMappings():Promise<FieldMapping[] | null> {
     const docs = await this.storageService.replica.queryDocs({
       filter: { pathStartsWith: this.schemaPath }
@@ -61,7 +65,7 @@ export class FieldmappingService {
     else {
       console.log('get all FieldMappings successful',docs)
       //doc.text of null/zero length signifies a tombstone (deleted) doc
-      let fieldMappings:FieldMapping[] = docs.filter((doc) => doc.text?.length > 0).map((doc) => JSON.parse(doc.text)).sort((a,b) => b.dateUpdated - a.dateUpdated)
+      let fieldMappings:FieldMapping[] = docs.filter((doc) => doc.text?.length > 0).map((doc) => JSON.parse(doc.text))
       fieldMappings.forEach((fieldMapping) => {
         fieldMapping.dateCreated = new Date(fieldMapping.dateCreated)
         fieldMapping.dateUpdated = new Date(fieldMapping.dateUpdated)
@@ -71,13 +75,17 @@ export class FieldmappingService {
     }
   }
 
-  async saveFieldMapping(fieldMapping:FieldMapping):Promise<any> {
+  async saveFieldMapping(fieldMapping:FieldMapping):Promise<EarthstarDocPath | null> {
     //if we are creating a new FieldMapping then we assign an id, dateCreated and createdBy...
     if(!fieldMapping.id) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
       fieldMapping.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       fieldMapping.dateCreated = Date.now()
       fieldMapping.createdBy = this.appService.user
+    }
+    else {
+      //convert the dateCreated (back) to milliseconds before saving...
+      fieldMapping.dateCreated = new Date(fieldMapping.dateCreated).getTime()
     }
     fieldMapping.dateUpdated = Date.now()
     fieldMapping.updatedBy = this.appService.user
@@ -95,7 +103,7 @@ export class FieldmappingService {
     }
     else {
       console.log('FieldMapping save successful',result)
-      return result
+      return result['doc']['path']
     }
   }
 
@@ -123,10 +131,16 @@ export class FieldmappingService {
           //prepend the remote id with the current schemaPath before looking for it in storage
           remoteFieldMapping.id = this.schemaPath + remoteFieldMapping.id
           const existingCoreFieldMapping = await this.getFieldMapping(remoteFieldMapping.id)
+          
           if(existingCoreFieldMapping) {
-            existingCoreFieldMapping.sourceName = remoteFieldMapping.sourceName
-            existingCoreFieldMapping.fields = remoteFieldMapping.fields
-            await this.saveFieldMapping(existingCoreFieldMapping)
+            //if the sourceName or fields (object) are different in existing v remote, then update, otherwise do nothing
+            if(existingCoreFieldMapping.sourceName !== remoteFieldMapping.sourceName || !_.isEqual(existingCoreFieldMapping.fields, remoteFieldMapping.fields)) {
+              existingCoreFieldMapping.sourceName = remoteFieldMapping.sourceName
+              existingCoreFieldMapping.fields = remoteFieldMapping.fields
+              
+              console.log(`core fieldMapping '${existingCoreFieldMapping.sourceName}' being updated`)
+              await this.saveFieldMapping(existingCoreFieldMapping)
+            }
           }
           else {
             const newCoreFieldMapping:FieldMapping = {
@@ -137,6 +151,7 @@ export class FieldmappingService {
               dateCreated: Date.now(),
               createdBy: this.appService.user
             }
+            console.log(`core fieldMapping '${existingCoreFieldMapping.sourceName}' being created`)
             await this.saveFieldMapping(newCoreFieldMapping)
           }
           

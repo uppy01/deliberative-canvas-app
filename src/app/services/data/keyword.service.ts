@@ -40,6 +40,9 @@ export class KeywordService {
     }
   }
 
+  /**
+   * only returns Keyword's for this class' specified schemaVersion - those saved under a different schema version will not be returned
+   */
   async getKeywords():Promise<Keyword[] | null> {
     const docs = await this.storageService.replica.queryDocs({
       filter: { pathStartsWith: this.schemaPath }
@@ -62,13 +65,17 @@ export class KeywordService {
     }
   }
 
-  async saveKeyword(keyword:Keyword):Promise<any> {
+  async saveKeyword(keyword:Keyword):Promise<EarthstarDocPath | null> {
     //if we are creating a new Keyword then we assign an id, dateCreated and createdBy...
     if(!keyword.id) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
       keyword.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       keyword.dateCreated = Date.now()
       keyword.createdBy = this.appService.user
+    }
+    else {
+      //convert the dateCreated (back) to milliseconds before saving...
+      keyword.dateCreated = new Date(keyword.dateCreated).getTime()
     }
     keyword.dateUpdated = Date.now()
     keyword.updatedBy = this.appService.user
@@ -86,7 +93,7 @@ export class KeywordService {
     }
     else {
       console.log('Keyword save successful',result)
-      return result
+      return result['doc']['path']
     }
   }
 

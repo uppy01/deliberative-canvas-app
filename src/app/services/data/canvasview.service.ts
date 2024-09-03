@@ -43,6 +43,9 @@ export class CanvasviewService {
     }
   }
 
+  /**
+   * only returns CanvasView's for this class' specified schemaVersion - those saved under a different schema version will not be returned
+   */
   async getCanvasViews():Promise<CanvasView[] | null> {
     /**
      NOTE: whilst CanvasView does have a 'fileData' property (to hold an Earthstar attachment) we are currently not retrieving it here because we do not need to use it in the app...the attachment is only for Earthstar server requests
@@ -77,7 +80,7 @@ export class CanvasviewService {
     return canvasViews
   }
 
-  async saveCanvasView(canvasView:CanvasView):Promise<any> {
+  async saveCanvasView(canvasView:CanvasView):Promise<EarthstarDocPath | null> {
     const buffer = await canvasView.fileData.arrayBuffer()
     const attachmentData = new Uint8Array(buffer)
     const attachmentNameSlug = generateSlugString(canvasView.title)
@@ -93,6 +96,10 @@ export class CanvasviewService {
       canvasView.dateCreated = Date.now()
       canvasView.createdBy = this.appService.user
     }
+    else {
+      //convert the dateCreated (back) to milliseconds before saving...
+      canvasView.dateCreated = new Date(canvasView.dateCreated).getTime()
+    }
     canvasView.dateUpdated = Date.now()
     canvasView.updatedBy = this.appService.user
     
@@ -104,13 +111,59 @@ export class CanvasviewService {
     });
     
     if(Earthstar.isErr(result)) {
-        console.error('error saving CanvasView',result);
-        return null
+      console.error('error saving CanvasView',result);
+      return null
     }
     else {
       console.log('CanvasView save successful',result)
-      return result
+      return result['doc']['path']
     }
+  }
+
+  async saveCanvasViewAttachmentOnly(canvasView:CanvasView):Promise<EarthstarDocPath | null> {
+    const buffer = await canvasView.fileData.arrayBuffer()
+    const attachmentData = new Uint8Array(buffer)
+
+    //we retrieve the current doc so that we can copy the 'text' property, without modifying, on the proceeding write to replica...
+    const doc = await this.storageService.replica.getLatestDocAtPath(canvasView.id)
+
+    // Write to the replica.
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
+      text: doc.text,
+      attachment: attachmentData,
+      path: canvasView.id,
+    });
+    
+    if(Earthstar.isErr(result)) {
+      console.error('error saving CanvasView (Attachment Only)',result);
+      return null
+    }
+    else {
+      console.log('CanvasView (Attachment Only) save successful',result)
+      return result['doc']['path']
+    }
+  }
+
+  async removeExportLogIDOnly(canvasView:CanvasView, exportLogID:EarthstarDocPath):Promise<EarthstarDocPath | null> {
+    
+    //use the array filter function to remove only the specified exportLogID
+    canvasView.exportLogIDs = canvasView.exportLogIDs.filter((id) => id !== exportLogID)
+
+    // Write to the replica...the removed exportLogID is the only change made to 'canvasView' data
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
+      text: JSON.stringify(canvasView),
+      path: canvasView.id,
+    });
+    
+    if(Earthstar.isErr(result)) {
+      console.error('error saving CanvasView (RemoveExportLogIDOnly)',result);
+      return null
+    }
+    else {
+      console.log('CanvasView save successful (RemoveExportLogIDOnly)',result)
+      return result['doc']['path']
+    }
+
   }
 
   async deleteCanvasView(id:EarthstarDocPath) {

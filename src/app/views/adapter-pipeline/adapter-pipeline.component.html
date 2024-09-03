@@ -23,7 +23,7 @@
         <button #showImportSource_btn class="btn rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="0" (click)="renderProgressBar('0%')" [ngClass]="progBarProgress === '0%' ? 'btn-info' : 'btn-light'">1) Source</button>
         <button #showFieldMapping_btn class="btn rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="1" (click)="renderProgressBar('33%')" [ngClass]="progBarProgress === '33%' ? 'btn-info' : 'btn-light'">2) Fields</button>
         <button #showDataOutput_btn class="btn rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="2" (click)="renderProgressBar('67%')" [ngClass]="progBarProgress === '67%' ? 'btn-info' : 'btn-light'">3) Data</button>
-        <button #showExport_btn class="btn rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="3" (click)="renderProgressBar('100%')" [ngClass]="progBarProgress === '100%' ? 'btn-info' : 'btn-light'">4) Export</button>
+        <button #showExport_btn class="btn rounded-pill" data-bs-target="#processCarousel" data-bs-slide-to="3" (click)="renderProgressBar('100%')" [ngClass]="progBarProgress === '100%' ? 'btn-info' : 'btn-light'">4) Export & Save</button>
     </div>
     
     <div id="processCarousel" class="carousel slide container">
@@ -46,33 +46,41 @@
             </div>
             
             <div class="carousel-item justify-content-center">
-                <h1 class="d-flex display-6 justify-content-between mb-3">
-                    Select source field mappings to apply...
-                </h1>
-                <ul #fieldMappings_listgroup class="list-group">
-                    <li *ngFor="let fieldMapping of fieldMappings; let i = index" class="list-group-item mb-2">
-                        <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" [value]="i" [attr.id]="'fieldMapping_radio' + i" (change)="fieldMappingSelectionChange($event)" [checked]="fieldMapping.id === selectedFieldMapping?.id">
-                        <label class="form-check-label fs-4" [attr.for]="'fieldMapping_radio' + i">{{fieldMapping.sourceName}}</label>
-                    </li>
-                    <li class="list-group-item mb-2">
-                        <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" value="" id="noFieldMapping_radio" (change)="fieldMappingSelectionChange($event)" [checked]="selectedFieldMapping?.id === null">
-                        <label class="form-check-label fs-4" for="noFieldMapping_radio">None</label>
-                    </li>
-                </ul>
+                <div *ngIf="!sourceLocalFile && sourceURL === ''" class="d-flex fs-4 justify-content-center">
+                    Source file not set!
+                </div>
+                <div *ngIf="sourceLocalFile || sourceURL !== ''">
+                    <h1 class="d-flex display-6 justify-content-between mb-3">
+                        Select source field mappings to apply...
+                    </h1>
+                    <ul #fieldMappings_listgroup class="list-group">
+                        <li *ngFor="let fieldMapping of fieldMappings; let i = index" class="list-group-item mb-2">
+                            <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" [value]="i" [attr.id]="'fieldMapping_radio' + i" (change)="fieldMappingSelectionChange($event)" [checked]="fieldMapping.id === selectedFieldMapping?.id">
+                            <label class="form-check-label fs-4" [attr.for]="'fieldMapping_radio' + i">{{fieldMapping.sourceName}}</label>
+                        </li>
+                        <li class="list-group-item mb-2">
+                            <input class="form-check-input me-1 fs-4" type="radio" name="listGroupRadio" value="" id="noFieldMapping_radio" (change)="fieldMappingSelectionChange($event)" [checked]="selectedFieldMapping?.id === null">
+                            <label class="form-check-label fs-4" for="noFieldMapping_radio">None</label>
+                        </li>
+                    </ul>
+                </div>
             </div>
             
             <div class="carousel-item">
-                <div *ngIf="!selectedExportLog?.id && !sourceLocalFile && sourceURL === ''" class="d-flex fs-4 justify-content-center">
+                <div *ngIf="!sourceLocalFile && sourceURL === '' && !responses" class="d-flex fs-4 justify-content-center">
                     Source file not set!
                 </div>
                 <div *ngIf="(sourceLocalFile || sourceURL !== '') && !responses" class="d-flex align-items-center align-vertical justify-content-center">
-                    <button class="btn btn-warning fs-4 w-50" (click)="parseFile()">Import Data</button>
+                    <button class="btn btn-warning fs-4 w-50" (click)="importSourceData()">Import Data</button>
                     <div *ngIf="isImportInProgress" class="spinner-border text-success m-2">
                         <span class="visually-hidden">importing data...</span>
                     </div>
                 </div>
                 <div *ngIf="responses" class="v-stack justify-content-center">
-                    <button class="btn btn-primary fs-4 w-25 mb-4" data-bs-toggle="modal" data-bs-target="#keywordAnnotator_div">Add Keywords</button>
+                    <div class="d-flex justify-content-between mb-4">
+                        <button class="btn btn-primary fs-4" data-bs-toggle="modal" data-bs-target="#keywordAnnotator_div" (click)="showKeywordAnnotator()">Add Keywords</button>
+                        <button class="btn btn-link" (click)="clearResponses()">clear data</button>
+                    </div>
                     <ul class="list-group list-group-flush">
                         <li *ngFor="let response of responses" class="list-group-item">({{response['date']}}) (<b>{{response['group-informed-consensus']}}</b>) {{response['Label']}} (<b>{{response['keywords']}}</b>)</li>
                     </ul>
@@ -86,7 +94,7 @@
                 <div *ngIf="updatingRemoteDataSource || responses">
                     <div class="vstack gap-3 mb-4">
                         <div *ngIf="remoteJSONExportURL !== '' && sourceURL !== ''" class="d-flex align-items-center align-vertical justify-content-center">
-                            <button class="btn btn-light" (click)="updateSyncRemoteSource()" title="{{sourceURL}}"><i class="bi bi-arrow-repeat"></i> Sync with remote data source</button>
+                            <button class="btn btn-light" (click)="updateAndSyncWithRemoteSource()" title="{{sourceURL}}"><i class="bi bi-arrow-repeat"></i> Sync with remote data source</button>
                             <div *ngIf="updatingRemoteDataSource" class="spinner-border spinner-border-sm text-secondary m-2">
                                 <span class="visually-hidden">updating with remote data...</span>
                             </div>

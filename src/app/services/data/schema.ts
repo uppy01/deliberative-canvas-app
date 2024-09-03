@@ -10,11 +10,6 @@ export type EarthstarProfile = {
     syncServerURL?:string
 }
 
-export type KumuEmbed = {
-    embedURL:string,
-    description?:string
-}
-
 export type Deliberation = {
     id?:EarthstarDocPath,
     title:string,

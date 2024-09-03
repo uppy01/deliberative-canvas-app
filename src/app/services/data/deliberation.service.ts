@@ -39,6 +39,9 @@ export class DeliberationService {
     }
   }
 
+  /**
+   * only returns Deliberation's for this class' specified schemaVersion - those saved under a different schema version will not be returned
+   */
   async getDeliberations():Promise<Deliberation[] | null> {
     const docs = await this.storageService.replica.queryDocs({
       filter: { pathStartsWith: this.schemaPath }
@@ -60,13 +63,17 @@ export class DeliberationService {
     }
   }
 
-  async saveDeliberation(deliberation:Deliberation):Promise<any> {
+  async saveDeliberation(deliberation:Deliberation):Promise<EarthstarDocPath | null> {
     //if we are creating a new Deliberation then we assign an id, dateCreated and createdBy...
     if(!deliberation.id) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
       deliberation.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       deliberation.dateCreated = Date.now()
       deliberation.createdBy = this.appService.user
+    }
+    else {
+      //convert the dateCreated (back) to milliseconds before saving...
+      deliberation.dateCreated = new Date(deliberation.dateCreated).getTime()
     }
     deliberation.dateUpdated = Date.now()
     deliberation.updatedBy = this.appService.user
@@ -78,12 +85,12 @@ export class DeliberationService {
     });
     
     if(Earthstar.isErr(result)) {
-        console.error('error saving Deliberation',result);
-        return null
+      console.error('error saving Deliberation',result);
+      return null
     }
     else {
       console.log('Deliberation save successful',result)
-      return result
+      return result['doc']['path']
     }
   }
 

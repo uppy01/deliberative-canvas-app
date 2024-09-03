@@ -1,11 +1,12 @@
 import { Component } from '@angular/core';
 import { FieldmappingService } from '../../services/data/fieldmapping.service';
-import { FieldMapping } from '../../services/data/schema';
+import { ExportLog, FieldMapping } from '../../services/data/schema';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../../services/app.service';
 import Papa from 'papaparse';
 import { BehaviorSubject } from 'rxjs';
+import { ExportlogService } from '../../services/data/exportlog.service';
 
 @Component({
   selector: 'app-fieldmapping-manager',
@@ -28,7 +29,7 @@ export class FieldmappingManagerComponent {
   templateCSV
 
 
-  constructor(private appService:AppService, private fieldMappingService:FieldmappingService) {
+  constructor(private appService:AppService, private fieldMappingService:FieldmappingService, private exportLogService:ExportlogService) {
   
   }
 
@@ -58,6 +59,7 @@ export class FieldmappingManagerComponent {
   async getFieldMappings() {
     console.log('getFieldMappings called')
     this.fieldMappings = await this.fieldMappingService.getFieldMappings()
+    this.fieldMappings.sort((a,b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime())
     console.log(this.fieldMappings)
   }
 
@@ -114,7 +116,17 @@ export class FieldmappingManagerComponent {
   }
 
   async deleteSourceFieldMapping(fieldMappingID) {
-    if(confirm('Are you sure you wish to delete this source and ALL its associated field mappings???')) {
+    let confirmMessage = 'Are you sure you wish to delete this source and ALL its associated field mappings?'
+
+    //check if the fieldMapping has been applied to any exportLog's...
+    const exportLogs:ExportLog[] = await this.exportLogService.getExportLogs()
+    if(exportLogs && exportLogs.length > 0) {
+      if(exportLogs.find((exportLog) => exportLog.appliedFieldMappingID === fieldMappingID)){
+        confirmMessage = "This source's field mappings have been applied to one or more data sets - are you sure you wish to delete this source and ALL its associated field mappings?"
+      }
+    }
+
+    if(confirm(confirmMessage)) {
       const result = await this.fieldMappingService.deleteFieldMapping(fieldMappingID)
       if(result) {
         this.newSourceName = ''

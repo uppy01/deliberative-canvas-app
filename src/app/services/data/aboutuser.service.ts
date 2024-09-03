@@ -36,7 +36,7 @@ export class AboutuserService {
     }
   }
 
-  async saveDisplayName(displayName:string):Promise<any> {
+  async saveDisplayName(displayName:string):Promise<EarthstarDocPath | null> {
     //following the Earthstar spec for storing display names - https://github.com/earthstar-project/application-formats/blob/main/formats/about/SPEC_1.0.md
     const path = '/about/1.0/~' + this.authService.esSettings.author.address + '/displayName'
     
@@ -47,13 +47,13 @@ export class AboutuserService {
     });
     
     if(Earthstar.isErr(result)) {
-        console.error('error saving DisplayName',result);
-        alert('ERROR SAVING DISPLAY NAME!')
-        return null
+      console.error('error saving DisplayName',result);
+      alert('ERROR SAVING DISPLAY NAME!')
+      return null
     }
     else {
       console.log('DisplayName save successful',result)
-      return result
+      return result['doc']['path']
     }
   }
 

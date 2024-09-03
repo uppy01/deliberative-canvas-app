@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { KeywordService } from '../../services/data/keyword.service';
-import { Keyword } from '../../services/data/schema';
+import { ExportLog, Keyword } from '../../services/data/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { AppService } from '../../services/app.service';
 import { StorageService } from '../../services/storage.service';
+import { ExportlogService } from '../../services/data/exportlog.service';
 
 @Component({
   selector: 'app-keyword-manager',
@@ -19,7 +20,7 @@ export class KeywordManagerComponent {
   keywordVariants:string = ''
   selectedKeyword:Keyword
 
-  constructor(private appService:AppService, private storageService:StorageService, private keywordService:KeywordService) {
+  constructor(private appService:AppService, private storageService:StorageService, private keywordService:KeywordService, private exportLogService:ExportlogService) {
 
   }
 
@@ -40,6 +41,7 @@ export class KeywordManagerComponent {
 
   async getAllKeywords() {
     this.allKeywords = await this.keywordService.getKeywords()
+    this.allKeywords.sort((a,b) => a.word.toLowerCase() < b.word.toLowerCase() ? -1 : 1 )
   }
 
   async saveKeyword() {
@@ -71,7 +73,17 @@ export class KeywordManagerComponent {
     this.keywordVariants = ''
   }
 
-  async removeKeyword(keywordID) {
+  async removeKeyword(keywordID:string) {
+    //first check if the keyword has been applied to any exportLog's...
+    const exportLogs:ExportLog[] = await this.exportLogService.getExportLogs()
+    if(exportLogs && exportLogs.length > 0) {
+      if(exportLogs.find((exportLog) => exportLog.appliedKeywordIDs.toString().includes(keywordID))){
+        if(!confirm('This keyword has been applied to one or more data sets - are you sure you wish to delete it?')) {
+          return
+        }
+      }
+    }
+
     const result = await this.keywordService.deleteKeyword(keywordID)
     if(result) {
       this.selectedKeyword = {

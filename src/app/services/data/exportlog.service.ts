@@ -54,6 +54,9 @@ export class ExportlogService {
     }
   }
 
+  /**
+   * only returns ExportLog's for this class' specified schemaVersion - those saved under a different schema version will not be returned
+   */
   async getExportLogs():Promise<any> {
     const docs = await this.storageService.replica.queryDocs({
       filter: { pathStartsWith: this.schemaPath }
@@ -76,7 +79,7 @@ export class ExportlogService {
     }
   }
 
-  async saveExportLog(exportLog:ExportLog):Promise<any> {
+  async saveExportLog(exportLog:ExportLog):Promise<EarthstarDocPath | null> {
     const buffer = await exportLog.fileData.arrayBuffer()
     const attachmentData = new Uint8Array(buffer)
     const attachmentNameSlug = generateSlugString(exportLog.fileName)
@@ -91,6 +94,10 @@ export class ExportlogService {
       exportLog.dateCreated = Date.now()
       exportLog.createdBy = this.appService.user
     }
+    else {
+      //convert the dateCreated (back) to milliseconds before saving...
+      exportLog.dateCreated = (exportLog.dateCreated as Date).getTime()
+    }
     exportLog.dateUpdated = Date.now()
     exportLog.updatedBy = this.appService.user
     
@@ -102,13 +109,13 @@ export class ExportlogService {
     });
     
     if(Earthstar.isErr(result)) {
-        console.error('error saving ExportLog',result);
-        alert('ERROR SAVING DATA!!! (EXPORTLOG)')
-        return
+      console.error('error saving ExportLog',result);
+      alert('ERROR SAVING DATA!!! (EXPORTLOG)')
+      return null
     }
     else {
       console.log('ExportLog save successful',result)
-      return result
+      return result['doc']['path']
     }
   }
 
