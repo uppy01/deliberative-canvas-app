@@ -1,5 +1,11 @@
 import { AuthorKeypair, ShareAddress } from "earthstar"
 
+export type SchemaMutation = {
+    schemaName:string,
+    id?:EarthstarDocPath
+    operation:string,
+}
+
 export type EarthstarDocPath = string
 export type EarthstarAuthorAddress = string
 

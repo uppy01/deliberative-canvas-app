@@ -3,13 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
-  selector: 'app-kumu-embed',
+  selector: 'app-canvasview-manager',
   standalone: true,
   imports: [FormsModule],
-  templateUrl: './kumu-embed.component.html',
-  styleUrl: './kumu-embed.component.css',
+  templateUrl: './canvasview-manager.component.html',
+  styleUrl: './canvasview-manager.component.css',
 })
-export class KumuEmbedComponent {
+export class CanvasviewManagerComponent {
 
   kumuEmbedURL:string = ''
   urlSafe: SafeResourceUrl;

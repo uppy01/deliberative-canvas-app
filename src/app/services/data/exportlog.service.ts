@@ -3,8 +3,9 @@ import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
 import { generateSlugString } from '../../utils/generator';
-import { EarthstarDocPath, ExportLog } from './schema';
+import { EarthstarDocPath, ExportLog, SchemaMutation } from './schema';
 import { StorageService } from '../storage.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -14,6 +15,8 @@ export class ExportlogService {
   schemaName:string = 'exportlog'
   schemaVersion:string = '1.0'
   schemaPath:string
+  
+  schemaMutation:BehaviorSubject<SchemaMutation>
 
   constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
     this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
@@ -58,6 +61,10 @@ export class ExportlogService {
    * only returns ExportLog's for this class' specified schemaVersion - those saved under a different schema version will not be returned
    */
   async getExportLogs():Promise<any> {
+    /**
+     * NOTE: we are not getting attachments...they should be retrieved on a per doc basis through "getExportLog(id)"
+     */
+    
     const docs = await this.storageService.replica.queryDocs({
       filter: { pathStartsWith: this.schemaPath }
     }) 
@@ -89,7 +96,8 @@ export class ExportlogService {
     exportLog.fileData = null
     
     //if we are creating a new exportLog then we assign an id, dateCreated and createdBy...
-    if(!exportLog.id) {
+    const createNew:boolean = !exportLog.id
+    if(createNew) {
       exportLog.id = `${this.schemaPath}${Date.now()}_${attachmentNameSlug}.${attachmentExtension}`
       exportLog.dateCreated = Date.now()
       exportLog.createdBy = this.appService.user
@@ -115,6 +123,7 @@ export class ExportlogService {
     }
     else {
       console.log('ExportLog save successful',result)
+      if(!createNew) this.schemaMutation.next({schemaName:this.schemaName,operation:'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -128,8 +137,38 @@ export class ExportlogService {
     }
     else {
       console.log('ExportLog delete successful',result)
+      this.schemaMutation.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
+  }
+
+  /**
+   * saves the exportLog without mutating 'dateUpdated', 'updatedBy' or any attachment data
+   */
+  async cascadeSaveExportLog(exportLog:ExportLog):Promise<EarthstarDocPath | null> {
+    
+    //make sure fileData is null...
+    exportLog.fileData = null
+
+    //convert dates (back) to milliseconds before saving...(note we don't change their value)
+    exportLog.dateCreated = (exportLog.dateCreated as Date).getTime()
+    exportLog.dateUpdated = (exportLog.dateUpdated as Date).getTime()
+
+    // Write to the replica...
+    const result = await this.storageService.replica.set(this.authService.esSettings.author, {
+      text: JSON.stringify(exportLog),
+      path: exportLog.id,
+    });
+    
+    if(Earthstar.isErr(result)) {
+      console.error('error CASCADE saving ExportLog',result);
+      return null
+    }
+    else {
+      console.log('ExportLog CASCADE save successful',result)
+      return result['doc']['path']
+    }
+    
   }
 
 }

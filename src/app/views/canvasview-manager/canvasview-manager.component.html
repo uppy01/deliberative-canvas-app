@@ -2,7 +2,7 @@
     <input class="form-control" [(ngModel)]="kumuEmbedURL"/>
     <button class="btn btn-primary" (click)="loadIframeContent()">Load</button>
 </div>
-<div class="d-flex justify-content-center mt-3">
-    <iframe [src]="urlSafe" width="800" height="600" frameborder="1"></iframe>
+<div class="d-flex w-100 vh-100 justify-content-center mt-3">
+    <iframe [src]="urlSafe" width="100%" height="100%" frameborder="1"></iframe>
 </div>
 

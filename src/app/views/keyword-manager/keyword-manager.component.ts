@@ -77,7 +77,7 @@ export class KeywordManagerComponent {
     //first check if the keyword has been applied to any exportLog's...
     const exportLogs:ExportLog[] = await this.exportLogService.getExportLogs()
     if(exportLogs && exportLogs.length > 0) {
-      if(exportLogs.find((exportLog) => exportLog.appliedKeywordIDs.toString().includes(keywordID))){
+      if(exportLogs.find((exportLog) => exportLog.appliedKeywordIDs?.toString().includes(keywordID))){
         if(!confirm('This keyword has been applied to one or more data sets - are you sure you wish to delete it?')) {
           return
         }

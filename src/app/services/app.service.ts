@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
-import { BehaviorSubject, Subscription } from 'rxjs';
-import * as Earthstar from 'earthstar';
-import { ReplicaDriverWeb } from "earthstar/browser";
-import { EarthstarAuthorAddress, EarthstarProfile, FieldMapping } from './data/schema';
+import { Subscription } from 'rxjs';
+import { EarthstarAuthorAddress, EarthstarProfile} from './data/schema';
 import { SyncService } from './sync.service';
 import { AboutuserService } from './data/aboutuser.service';
 import { StorageService } from './storage.service';

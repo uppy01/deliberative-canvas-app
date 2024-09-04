@@ -11,3 +11,4 @@
 - not sure if this should happen, but in kumu-links (child component) when you update any of the kumuMap object properties through the UI, the changes automatically bubble up to the selectedKumuMap object in adapter-pipeline (parent component)
     - based on my understanding of Angular parent-child conventions, this two-way binding shouldn't happen and instead should require having to emit an event from kumu-links that adapter-pipeline then listens for and manually updates selectedKumuMap...🤔
 - the 'fieldmappings.json' fetched from GitHub on app load is subject to GH's caching policy (~ 5 minutes), so any changes/commits to that file may not show up immediately in the app upon refresh/reload.
+- the 'MutationCascadeService' injected into 'app.component.ts' is purely for "bootstrapping" schema mutation cascading across related schemas (in relational database fashion)

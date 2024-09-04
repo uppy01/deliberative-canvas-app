@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { AboutuserService } from './services/data/aboutuser.service';
 import { NgIf } from '@angular/common';
 import { StorageService } from './services/storage.service';
+import { MutationCascadeService } from './services/data/mutation-cascade.service';
 
 @Component({
   selector: 'app-root',
@@ -29,7 +30,7 @@ export class AppComponent {
   linkProfile_component:LinkProfileComponent
 
 
-  constructor(protected appService:AppService, protected authService:AuthService, private storageService:StorageService, protected syncService:SyncService, private aboutUserService:AboutuserService) {
+  constructor(protected appService:AppService, protected authService:AuthService, private storageService:StorageService, protected syncService:SyncService, private aboutUserService:AboutuserService, private mutationCascadeService:MutationCascadeService) {
     
   }
 

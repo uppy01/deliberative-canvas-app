@@ -6,7 +6,7 @@ import { CanvasviewService } from '../../../services/data/canvasview.service';
 import { ExportlogService } from '../../../services/data/exportlog.service';
 import { SyncService } from '../../../services/sync.service';
 import { AuthService } from '../../../services/auth.service';
-import { CascadeService } from '../../../services/data/cascade.service';
+import { MutationCascadeService } from '../../../services/data/mutation-cascade.service';
 
 @Component({
   selector: 'app-canvasview-connector',

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, FieldMapping } from './schema';
+import { EarthstarDocPath, FieldMapping, SchemaMutation } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage.service';
@@ -16,6 +16,8 @@ export class FieldmappingService {
   schemaName:string = 'fieldmapping'
   schemaVersion:string = '1.0'
   schemaPath:string
+
+  schemaMutation:BehaviorSubject<SchemaMutation>
 
   fieldMappingServiceReady:BehaviorSubject<boolean> = new BehaviorSubject(false)
 
@@ -77,7 +79,8 @@ export class FieldmappingService {
 
   async saveFieldMapping(fieldMapping:FieldMapping):Promise<EarthstarDocPath | null> {
     //if we are creating a new FieldMapping then we assign an id, dateCreated and createdBy...
-    if(!fieldMapping.id) {
+    const createNew:boolean = !fieldMapping.id
+    if(createNew) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
       fieldMapping.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       fieldMapping.dateCreated = Date.now()
@@ -103,6 +106,7 @@ export class FieldmappingService {
     }
     else {
       console.log('FieldMapping save successful',result)
+      if(!createNew) this.schemaMutation.next({schemaName:this.schemaName,operation:'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -116,6 +120,7 @@ export class FieldmappingService {
     }
     else {
       console.log('FieldMapping delete successful',result)
+      this.schemaMutation.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
   }

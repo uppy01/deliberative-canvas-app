@@ -144,12 +144,19 @@ export class CanvasviewService {
     }
   }
 
-  async removeExportLogIDOnly(canvasView:CanvasView, exportLogID:EarthstarDocPath):Promise<EarthstarDocPath | null> {
-    
-    //use the array filter function to remove only the specified exportLogID
-    canvasView.exportLogIDs = canvasView.exportLogIDs.filter((id) => id !== exportLogID)
+  /**
+   * saves the canvasView without mutating 'dateUpdated', 'updatedBy' or any attachment data
+   */
+  async cascadeSaveCanvasView(canvasView:CanvasView):Promise<EarthstarDocPath | null> {
 
-    // Write to the replica...the removed exportLogID is the only change made to 'canvasView' data
+    //make sure fileData is nulled before saving...
+    canvasView.fileData = null
+
+    //convert dates (back) to milliseconds before saving...(note we don't change their value)
+    canvasView.dateCreated = (canvasView.dateCreated as Date).getTime()
+    canvasView.dateUpdated = (canvasView.dateUpdated as Date).getTime()
+
+    // Write to the replica...
     const result = await this.storageService.replica.set(this.authService.esSettings.author, {
       text: JSON.stringify(canvasView),
       path: canvasView.id,

@@ -5,7 +5,6 @@ import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../../services/app.service';
 import Papa from 'papaparse';
-import { BehaviorSubject } from 'rxjs';
 import { ExportlogService } from '../../services/data/exportlog.service';
 
 @Component({

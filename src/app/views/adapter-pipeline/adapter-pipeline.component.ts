@@ -15,7 +15,7 @@ import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword
 import { AnnotatorService } from '../../services/annotator.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
 import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
-import { CascadeService } from '../../services/data/cascade.service';
+import { MutationCascadeService } from '../../services/data/mutation-cascade.service';
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -53,7 +53,7 @@ export class AdapterPipelineComponent {
   showExport_btn:ElementRef<HTMLButtonElement>
   
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private cascadeService:CascadeService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private cascadeService:MutationCascadeService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')
@@ -320,11 +320,6 @@ export class AdapterPipelineComponent {
 
     const savedExportLogID = await this.exportlogService.saveExportLog(exportLogToSave)
     if(savedExportLogID) {
-      //cascade changes if updating the exportLog...
-      if(this.selectedExportLog.id) {
-        this.cascadeService.exportLogMutation(this.selectedExportLog.id,'UPDATE')
-      }
-      
       this.selectedExportLog = await this.exportlogService.getExportLog(savedExportLogID)
       console.log('just saved exportLog',this.selectedExportLog)
       this.remoteJSONExportURL = this.syncService.syncServerURL + savedExportLogID + '?share=' + this.authService.esSettings.shares[0]
@@ -381,8 +376,6 @@ export class AdapterPipelineComponent {
     if(confirm("Confirm you wish to delete...")) {
       const result = await this.exportlogService.deleteExportLog(this.selectedExportLog.id)
       if(result) {
-        //cascade changes for exportLog...
-        await this.cascadeService.exportLogMutation(this.selectedExportLog.id,'DELETE')
         this.resetToNew()
         this.getExportLogs()
 
