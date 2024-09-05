@@ -17,12 +17,16 @@ export class MutationCascadeService {
   exportLogSubscription:Subscription
   fieldMappingSubscription:Subscription
 
+  
   constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, private fieldMappingService:FieldmappingService, private keywordService:KeywordService) { 
     
     this.schemaMutation = new BehaviorSubject({schemaName:'',id:'',operation:'INIT'})
+    
+    //we are manually "injecting" schemaMutation into each schema service to avoid circular dependencies that would arise if we were to use Angular's DI to inject this service into each schema service
     this.exportLogService.schemaMutation = this.schemaMutation
     this.fieldMappingService.schemaMutation = this.schemaMutation
     this.keywordService.schemaMutation = this.schemaMutation
+
 
     this.schemaMutationSubscription = this.schemaMutation.subscribe((mutation) => {
       if(mutation.operation === 'INIT') {

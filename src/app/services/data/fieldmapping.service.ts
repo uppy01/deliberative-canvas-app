@@ -156,7 +156,7 @@ export class FieldmappingService {
               dateCreated: Date.now(),
               createdBy: this.appService.user
             }
-            console.log(`core fieldMapping '${existingCoreFieldMapping.sourceName}' being created`)
+            console.log(`core fieldMapping '${newCoreFieldMapping.sourceName}' being created`)
             await this.saveFieldMapping(newCoreFieldMapping)
           }
           

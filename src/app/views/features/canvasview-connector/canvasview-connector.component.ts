@@ -6,7 +6,7 @@ import { CanvasviewService } from '../../../services/data/canvasview.service';
 import { ExportlogService } from '../../../services/data/exportlog.service';
 import { SyncService } from '../../../services/sync.service';
 import { AuthService } from '../../../services/auth.service';
-import { MutationCascadeService } from '../../../services/data/mutation-cascade.service';
+import { StorageService } from '../../../services/storage.service';
 
 @Component({
   selector: 'app-canvasview-connector',
@@ -34,9 +34,15 @@ export class CanvasviewConnectorComponent {
   }
   private _exportLogID = '';
 
-  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService) {
+  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private storageService:StorageService) {
     this.initSelectedCanvasView()
-    this.getCanvasViews()
+    
+    const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
+      if(configured) {
+        this.getCanvasViews()
+      }
+    })
+    
   }
 
   initSelectedCanvasView() {
