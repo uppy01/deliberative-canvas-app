@@ -11,11 +11,11 @@
     </div>
     <div class="list-group mt-2">
         <a *ngFor="let canvasView of canvasViews | textFilter: canvasViewSearchText : ['title','description']" class="list-group-item list-group-item-action" data-bs-toggle="modal" data-bs-target="#canvasView_div" (click)="showCanvasView(canvasView)" >
-            <div class="d-flex w-100 justify-content-between">
+            <div class="d-flex w-100 justify-content-between mb-2">
                 <h5 class="mb-1">{{canvasView.title}}</h5>
                 <small>Last updated: {{canvasView?.dateUpdated | date:'medium'}}</small>
             </div>
-            <p class="mb-2">{{canvasView.description}}</p>
+            <p class="mb-3">{{canvasView.description}}</p>
             <div class="d-flex overflow-auto align-items-center gap-2 mb-1">
                 <small><i>data sources: </i></small>
                 <span *ngFor="let exportLogID of canvasView.exportLogIDs" class="badge rounded-pill text-bg-info"><small>{{renderExportLogTitle(exportLogID)}}</small></span>
@@ -23,19 +23,20 @@
         </a>
     </div>
 </div>
+
 <div *ngIf="showCanvasViewDetail" class="d-flex justify-content-center mt-3">
     <button class="btn btn-outline-primary w-50" data-bs-toggle="modal" data-bs-target="#canvasView_div">Show Details</button>
 </div>
-<div *ngIf="showCanvasViewDetail && selectedCanvasView.embedURL !== ''" class="d-flex w-100 vh-100 justify-content-center mt-3">
-    <iframe [src]="embedURLSafe" width="100%" height="100%" frameborder="1"></iframe>
+<div *ngIf="showCanvasViewDetail" class="d-flex w-100 vh-100 justify-content-center mt-3">
+    <iframe #embed_iframe [src]="embedURLSafe" width="100%" height="100%" frameborder="1"></iframe>
 </div>
 
-<div #canvasView_div id="canvasView_div" class="modal" tabindex="-1">
+<div #canvasView_div id="canvasView_div" class="modal" data-bs-backdrop="static" tabindex="-1">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header justify-content-between">
-            <button class="btn btn-light" data-bs-dismiss="modal" (click)="cancelCanvasView()"><h6><i class="bi bi-arrow-bar-left"></i> Back to Canvas List</h6></button>
-            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            <button class="btn btn-light" data-bs-dismiss="modal" (click)="cancelCanvasView()"><i class="bi bi-arrow-bar-left"></i> Back to Canvas List</button>
+            <button class="btn btn-outline-primary" data-bs-dismiss="modal" (click)="showEmbed()" [disabled]="this.selectedCanvasView.embedURL === '' || !this.validateEmbedURL()"><i class="bi bi-eye"></i> Display Canvas</button>
         </div>
         <div class="modal-body">
             <div class="d-flex justify-content-end" role="group">
@@ -53,19 +54,20 @@
             <div class="mb-3">
                 <label for="canvasViewEmbedURL_input" class="form-label">Embed Link</label>
                 <div class="input-group">
-                    <button class="btn btn-light" data-bs-dismiss="modal" (click)="refreshEmbed()" [disabled]="selectedCanvasView.embedURL === ''"><i class="bi bi-arrow-clockwise"></i></button>
-                    <input type="text" class="form-control" id="canvasViewEmbedURL_input" [(ngModel)]="selectedCanvasView.embedURL" placeholder="enter a canvas embed URL...">
+                    <input type="text" class="form-control" id="canvasViewEmbedURL_input" [(ngModel)]="selectedCanvasView.embedURL" placeholder="enter a canvas embed URL..." [class.is-invalid]="!validateEmbedURL()" >
                     <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.embedURL)" [disabled]="selectedCanvasView.embedURL === ''"><i class="bi bi-clipboard"></i></button>
                     <button class="btn btn-light" [disabled]="selectedCanvasView.embedURL === ''"><a [href]="selectedCanvasView.embedURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
                 </div>
+                <div *ngIf="!validateEmbedURL()"><span style="color: gray; font-style:italic;">not a valid Kumu embed link</span></div>
             </div>
             <div class="mb-3">
                 <label for="canvasViewProjectURL_input" class="form-label">Project Link</label>
                 <div class="input-group">
-                    <input type="text" class="form-control" id="canvasViewProjectURL_input" [(ngModel)]="selectedCanvasView.projectURL" placeholder="enter the (Kumu) project URL that the canvas belongs to...">
+                    <input type="text" class="form-control" id="canvasViewProjectURL_input" [(ngModel)]="selectedCanvasView.projectURL" placeholder="enter the (Kumu) project URL that the canvas belongs to..." [class.is-invalid]="!validateProjectURL()">
                     <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.projectURL)" [disabled]="selectedCanvasView.projectURL === ''"><i class="bi bi-clipboard"></i></button>
                     <button class="btn btn-light" [disabled]="selectedCanvasView.projectURL === ''"><a [href]="selectedCanvasView.projectURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
                 </div>
+                <div *ngIf="!validateProjectURL()"><span style="color: gray; font-style:italic;">not a valid Kumu project link</span></div>
             </div>
             <div>
                 <label>Data Sources</label>
@@ -89,7 +91,7 @@
         </div>
         <div class="modal-footer justify-content-between">
             <div>
-                <button class="btn btn-primary" data-bs-dismiss="modal" (click)="saveCanvasView()" [disabled]="selectedCanvasView.title === ''">{{selectedCanvasView.id ? 'Update' : 'Create'}}</button>
+                <button class="btn btn-success" data-bs-dismiss="modal" (click)="saveCanvasView()" [disabled]="selectedCanvasView.title === ''">{{selectedCanvasView.id ? 'Update' : 'Create'}}</button>
                 <button class="btn btn-sm btn-link" data-bs-dismiss="modal" (click)="cancelCanvasView()">cancel</button>
             </div>
             <button *ngIf="selectedCanvasView.id" class="btn btn-outline-danger" data-bs-dismiss="modal" (click)="deleteCanvasView()"><i class="bi bi-trash3"></i></button>

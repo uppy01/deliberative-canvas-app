@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, FieldMapping, SchemaMutation } from './schema';
+import { EarthstarDocPath, FieldMapping } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage.service';
 import * as _ from 'lodash';
+import { SchemaService } from './schema.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,12 +18,10 @@ export class FieldmappingService {
   schemaVersion:string = '1.0'
   schemaPath:string
 
-  schemaMutation:BehaviorSubject<SchemaMutation>
-
   fieldMappingServiceReady:BehaviorSubject<boolean> = new BehaviorSubject(false)
 
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) {
     this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
     
     const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
@@ -106,7 +105,7 @@ export class FieldmappingService {
     }
     else {
       console.log('FieldMapping save successful',result)
-      if(!createNew) this.schemaMutation.next({schemaName:this.schemaName,operation:'UPDATE',id:result['doc']['path']})
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation: createNew ? 'CREATE' : 'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -120,7 +119,7 @@ export class FieldmappingService {
     }
     else {
       console.log('FieldMapping delete successful',result)
-      this.schemaMutation.next({schemaName:this.schemaName,operation:'DELETE',id:id})
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
   }

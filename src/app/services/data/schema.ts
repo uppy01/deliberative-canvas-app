@@ -33,6 +33,7 @@ export type Deliberation = {
 export type FieldMapping = {
     id?:EarthstarDocPath,
     sourceName:string,
+    sourceFormat?:string,
     isCoreSource?:boolean,
     fields: object,
     dateCreated?:Date | number,

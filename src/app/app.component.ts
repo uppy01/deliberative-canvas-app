@@ -26,6 +26,10 @@ export class AppComponent {
   linkProfile:ElementRef<HTMLDivElement>
   linkProfile_Modal:Modal
 
+  @ViewChild('profileDetails_div')
+  profileDetails:ElementRef<HTMLDivElement>
+  profileDetails_Modal:Modal
+
   @ViewChild(LinkProfileComponent)
   linkProfile_component:LinkProfileComponent
 
@@ -43,7 +47,9 @@ export class AppComponent {
   }
 
   ngAfterViewInit() {
+    //we explicitly instantiate for ALL modals to eliminate weird errors when using bootstrap modal's javascript methods and events
     this.linkProfile_Modal = new Modal(this.linkProfile.nativeElement)
+    this.profileDetails_Modal = new Modal(this.profileDetails.nativeElement)
     
     this.linkProfile.nativeElement.addEventListener('hidden.bs.modal', event => {
       this.linkProfile_component.reset()
@@ -60,10 +66,6 @@ export class AppComponent {
     if(result) {
       await this.aboutUserService.getDisplayName()
     }
-  }
-
-  createProfileLink() {
-    this.linkProfile_Modal.show()
   }
 
   async copyToClipboard(text:string) {

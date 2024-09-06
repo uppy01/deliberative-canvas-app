@@ -91,6 +91,12 @@ export class AuthService {
         if(Earthstar.isErr(result)) {
           console.log('error removing share',result)
         }
+        else {
+          const removeSecretResult = this.esSettings.removeSecret(share)
+          if(Earthstar.isErr(removeSecretResult)) {
+            console.log('error removing share secret')
+          }
+        }
       })
       console.log('shares remaining: ',this.esSettings.shares)
     }

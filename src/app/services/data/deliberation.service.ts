@@ -5,6 +5,7 @@ import * as Earthstar from 'earthstar';
 import { EarthstarDocPath, Deliberation } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { StorageService } from '../storage.service';
+import { SchemaService } from './schema.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class DeliberationService {
   schemaPath:string
 
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) {
     this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
   }
 
@@ -65,7 +66,8 @@ export class DeliberationService {
 
   async saveDeliberation(deliberation:Deliberation):Promise<EarthstarDocPath | null> {
     //if we are creating a new Deliberation then we assign an id, dateCreated and createdBy...
-    if(!deliberation.id) {
+    const createNew:boolean = !deliberation.id
+    if(createNew) {
       //we append a 4-character random string to the current time to ensure a unique id (path)
       deliberation.id = `${this.schemaPath}${Date.now()}__${generateRandomString(4)}`
       deliberation.dateCreated = Date.now()
@@ -90,6 +92,7 @@ export class DeliberationService {
     }
     else {
       console.log('Deliberation save successful',result)
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation: createNew ? 'CREATE' : 'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -102,6 +105,7 @@ export class DeliberationService {
     }
     else {
       console.log('Deliberation delete successful',result)
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
   }

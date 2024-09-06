@@ -27,10 +27,15 @@ export class CanvasviewManagerComponent {
   showCanvasViewDetail:boolean = false
   remoteJSONCanvasViewURL:string = ''
   canvasViewSearchText:string = ''
+  embedURLRegEx = new RegExp(/https:\/\/([a-z0-9\-]+[.])kumu[.]io\//)
+  projectURLRegEx = new RegExp(/https:\/\/kumu[.]io\/([a-z0-9\-]+[/])([a-z0-9\-])/)
 
   @ViewChild('canvasView_div')
   canvasView_div:ElementRef<HTMLDivElement>
   canvasView_modal:Modal
+
+  @ViewChild('embed_iframe')
+  embed_iframe:ElementRef<HTMLIFrameElement>
 
 
   constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private sanitizer: DomSanitizer) {
@@ -75,11 +80,19 @@ export class CanvasviewManagerComponent {
     this.showCanvasViewDetail = true
   }
 
-  refreshEmbed() {
-    if(this.selectedCanvasView.embedURL && this.selectedCanvasView.embedURL.includes('.kumu.io')) {
+  showEmbed() {
+    if(this.selectedCanvasView.embedURL !== '' && this.validateEmbedURL() && this.selectedCanvasView.embedURL !== this.embed_iframe.nativeElement.src) {
       const url = this.sanitizer.sanitize(SecurityContext.URL,this.selectedCanvasView.embedURL)
       this.embedURLSafe = this.sanitizer.bypassSecurityTrustResourceUrl(url);
     }
+  }
+
+  validateEmbedURL():boolean {
+    return this.selectedCanvasView.embedURL !== '' ? this.embedURLRegEx.test(this.selectedCanvasView.embedURL) : true
+  }
+
+  validateProjectURL():boolean {
+    return this.selectedCanvasView.projectURL !== '' ? this.projectURLRegEx.test(this.selectedCanvasView.projectURL) : true
   }
 
   createNewCanvasView() {

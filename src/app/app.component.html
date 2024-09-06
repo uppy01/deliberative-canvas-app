@@ -16,7 +16,7 @@
           <li><a class="dropdown-item" routerLink="/canvasview-manager">Canvas Views</a></li>
           <li><hr class="dropdown-divider"></li>
           <li *ngIf="syncService.syncServerURL !== ''"><a class="dropdown-item" (click)="syncService.doSync()">Sync</a></li>
-          <li><a class="dropdown-item" (click)="createProfileLink()">Link Profile</a></li>
+          <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#linkProfile_div">Link Profile</a></li>
           <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#profileDetails_div">Profile Details</a></li>
         </ul>
       </div>

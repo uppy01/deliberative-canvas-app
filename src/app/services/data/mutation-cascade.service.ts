@@ -2,33 +2,23 @@ import { Injectable } from '@angular/core';
 import { CanvasView, EarthstarDocPath, ExportLog, SchemaMutation } from './schema';
 import { CanvasviewService } from './canvasview.service';
 import { ExportlogService } from './exportlog.service';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FieldmappingService } from './fieldmapping.service';
 import { KeywordService } from './keyword.service';
+import { SchemaService } from './schema.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MutationCascadeService {
 
-  schemaMutation:BehaviorSubject<SchemaMutation>
-  schemaMutationSubscription:Subscription
-
-  exportLogSubscription:Subscription
-  fieldMappingSubscription:Subscription
+  //schemaMutation:BehaviorSubject<SchemaMutation>
+  schemaMutationEventSubscription:Subscription
 
   
-  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, private fieldMappingService:FieldmappingService, private keywordService:KeywordService) { 
-    
-    this.schemaMutation = new BehaviorSubject({schemaName:'',id:'',operation:'INIT'})
-    
-    //we are manually "injecting" schemaMutation into each schema service to avoid circular dependencies that would arise if we were to use Angular's DI to inject this service into each schema service
-    this.exportLogService.schemaMutation = this.schemaMutation
-    this.fieldMappingService.schemaMutation = this.schemaMutation
-    this.keywordService.schemaMutation = this.schemaMutation
+  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, private fieldMappingService:FieldmappingService, private keywordService:KeywordService, private schemaService:SchemaService) { 
 
-
-    this.schemaMutationSubscription = this.schemaMutation.subscribe((mutation) => {
+    this.schemaMutationEventSubscription = this.schemaService.mutationEvent.subscribe((mutation) => {
       if(mutation.operation === 'INIT') {
         console.log(`schema mutation subscription initialised in mutation cascade service`)
       }

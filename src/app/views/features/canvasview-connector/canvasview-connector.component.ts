@@ -7,6 +7,7 @@ import { ExportlogService } from '../../../services/data/exportlog.service';
 import { SyncService } from '../../../services/sync.service';
 import { AuthService } from '../../../services/auth.service';
 import { StorageService } from '../../../services/storage.service';
+import { SchemaService } from '../../../services/data/schema.service';
 
 @Component({
   selector: 'app-canvasview-connector',
@@ -34,7 +35,9 @@ export class CanvasviewConnectorComponent {
   }
   private _exportLogID = '';
 
-  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private storageService:StorageService) {
+  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) { }
+
+  ngOnInit() {
     this.initSelectedCanvasView()
     
     const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
@@ -42,7 +45,13 @@ export class CanvasviewConnectorComponent {
         this.getCanvasViews()
       }
     })
-    
+
+    //we are using this to make sure we have the latest 'canvasViews' if/when this component is re-attached (re-use strategy), as ngOnInit() won't be called...
+    this.schemaService.mutationEvent.subscribe((mutation) => {
+      if(mutation.schemaName === this.canvasViewService.schemaName) {
+        this.getCanvasViews()
+      }
+    })
   }
 
   initSelectedCanvasView() {

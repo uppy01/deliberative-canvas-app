@@ -16,6 +16,7 @@ import { AnnotatorService } from '../../services/annotator.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
 import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
 import { MutationCascadeService } from '../../services/data/mutation-cascade.service';
+import Modal from 'bootstrap/js/dist/modal'
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -51,9 +52,17 @@ export class AdapterPipelineComponent {
   showDataOutput_btn:ElementRef<HTMLButtonElement>
   @ViewChild('showExport_btn')
   showExport_btn:ElementRef<HTMLButtonElement>
+
+  @ViewChild('keywordAnnotator_div')
+  keywordAnnotator_div:ElementRef<HTMLDivElement>
+  keywordAnnotator_modal:Modal
+
+  @ViewChild('canvasViews_div')
+  canvasViews_div:ElementRef<HTMLDivElement>
+  canvasViews_modal:Modal
   
 
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private cascadeService:MutationCascadeService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
+  constructor(private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')
@@ -82,9 +91,15 @@ export class AdapterPipelineComponent {
         if(event instanceof NavigationEnd && this.router.url === '/') {
           console.log('navigated to adapter-pipeline component route')
           this.getKeywords()
-          this.getFieldMappings(true)
+          this.getFieldMappings()
         }
       });
+  }
+
+  ngAfterViewInit() {
+    //we explicitly instantiate for ALL modals to eliminate weird errors when using bootstrap modal's javascript methods and events
+    this.keywordAnnotator_modal = new Modal(this.keywordAnnotator_div.nativeElement)
+    this.canvasViews_modal = new Modal(this.canvasViews_div.nativeElement)
   }
 
   async getExportLogs() {
@@ -132,7 +147,7 @@ export class AdapterPipelineComponent {
     
   }
 
-  async getFieldMappings(reUsingComponent:boolean=false) {
+  async getFieldMappings() {
     this.fieldMappings = await this.fieldMappingService.getFieldMappings()
     this.fieldMappings.sort((a,b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime())
     console.log(this.fieldMappings)
@@ -141,9 +156,15 @@ export class AdapterPipelineComponent {
       alert('no field mappings found')
       this.selectedFieldMapping = null
     }
-    else if(!reUsingComponent) {
-      this.selectedFieldMapping = this.fieldMappings[0]
+    else {
+      if(this.selectedExportLog.id) {
+        this.selectedFieldMapping = this.selectedExportLog.appliedFieldMappingID ? this.fieldMappings.find((fieldMapping) => fieldMapping.id === this.selectedExportLog.appliedFieldMappingID) : null
+      }
+      else {
+        this.selectedFieldMapping = this.fieldMappings[0]
+      }
     }
+      
   }
 
   async getKeywords() {

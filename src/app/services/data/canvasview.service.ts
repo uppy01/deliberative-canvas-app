@@ -2,9 +2,11 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, CanvasView } from './schema';
-import { generateRandomString, generateSlugString } from '../../utils/generator';
+import { EarthstarDocPath, CanvasView, SchemaMutation } from './schema';
+import { generateSlugString } from '../../utils/generator';
 import { StorageService } from '../storage.service';
+import { BehaviorSubject } from 'rxjs';
+import { SchemaService } from './schema.service';
 
 @Injectable({
   providedIn: 'root'
@@ -15,8 +17,7 @@ export class CanvasviewService {
   schemaVersion:string = '1.0'
   schemaPath:string
 
-
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) {
     this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
   }
 
@@ -90,7 +91,8 @@ export class CanvasviewService {
     canvasView.fileData = null
     
     //if we are creating a new CanvasView then we assign an id, dateCreated and createdBy...
-    if(!canvasView.id) {
+    const createNew:boolean = !canvasView.id
+    if(createNew) {
       //we append attachment extension to the path to enable compatibility with Earthstar Server...
       canvasView.id = `${this.schemaPath}${Date.now()}_${attachmentNameSlug}.${attachmentExtension}`
       canvasView.dateCreated = Date.now()
@@ -116,6 +118,7 @@ export class CanvasviewService {
     }
     else {
       console.log('CanvasView save successful',result)
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation: createNew ? 'CREATE' : 'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -181,6 +184,7 @@ export class CanvasviewService {
     }
     else {
       console.log('CanvasView delete successful',result)
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
   }

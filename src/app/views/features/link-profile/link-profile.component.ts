@@ -100,7 +100,7 @@ export class LinkProfileComponent {
 
   async importProfile(userProfile:EarthstarProfile) {
     this.authService.updateAuthorCredentials(userProfile.author)
-    this.authService.updateShares(userProfile.shares,true)
+    await this.authService.updateShares(userProfile.shares,true)
     await this.aboutUserService.saveDisplayName(userProfile.displayName)
 
     this.syncService.addSyncServer(userProfile.syncServerURL)

@@ -2,10 +2,10 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, Keyword, SchemaMutation } from './schema';
+import { EarthstarDocPath, Keyword } from './schema';
 import { generateRandomString } from '../../utils/generator';
 import { StorageService } from '../storage.service';
-import { BehaviorSubject } from 'rxjs';
+import { SchemaService } from './schema.service';
 
 @Injectable({
   providedIn: 'root'
@@ -16,9 +16,7 @@ export class KeywordService {
   schemaVersion:string = '1.0'
   schemaPath:string
 
-  schemaMutation:BehaviorSubject<SchemaMutation>
-
-  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService) {
+  constructor(private appService:AppService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) {
     this.schemaPath = `/${this.appService.appName}/${this.schemaName}/${this.schemaVersion}/`
   }
 
@@ -96,7 +94,7 @@ export class KeywordService {
     }
     else {
       console.log('Keyword save successful',result)
-      if(!createNew) this.schemaMutation.next({schemaName:this.schemaName,operation:'UPDATE',id:result['doc']['path']})
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation: createNew ? 'CREATE' : 'UPDATE',id:result['doc']['path']})
       return result['doc']['path']
     }
   }
@@ -110,7 +108,7 @@ export class KeywordService {
     }
     else {
       console.log('Keyword delete successful',result)
-      this.schemaMutation.next({schemaName:this.schemaName,operation:'DELETE',id:id})
+      this.schemaService.mutationEvent.next({schemaName:this.schemaName,operation:'DELETE',id:id})
       return result
     }
   }
