@@ -24,9 +24,12 @@ export class FieldmappingManagerComponent {
   sourceFieldBeingUpdated:string = ''
   newSourceName:string = ''
   fieldMappingIDBeingUpdated:string = ''
-  templateCSVFileName = ''
-  templateCSV
+  templateFileName = ''
+  template
+  sourceFormats:string[] = ['csv','json']
+  sourceFormatSelectedIndex:number = 0
 
+  flattenedKeys:string[]
 
   constructor(private appService:AppService, private fieldMappingService:FieldmappingService, private exportLogService:ExportlogService) {
   
@@ -62,16 +65,23 @@ export class FieldmappingManagerComponent {
     console.log(this.fieldMappings)
   }
 
+  newSourceFieldMapping() {
+    this.newSourceName = ''
+    this.fieldMappingIDBeingUpdated = ''
+    this.sourceFormatSelectedIndex = 0
+  }
+
   async addSourceFieldMapping() {
     if(!this.fieldMappings.find((fieldMapping) => fieldMapping.sourceName.toLowerCase() === this.newSourceName.toLowerCase())) {
       const newFieldMapping:FieldMapping = {
         sourceName:this.newSourceName,
+        sourceFormat: this.sourceFormats[this.sourceFormatSelectedIndex],
         isCoreSource: false,
-        fields: this.templateCSV ? await this.parseTemplateCSVFields() : {}
+        fields: this.template ? await this.parseTemplateFields() : {}
       }
       const result = await this.fieldMappingService.saveFieldMapping(newFieldMapping)
       if(result) {
-        this.templateCSV = null
+        this.template = null
         this.getFieldMappings()
       }
     }
@@ -81,30 +91,95 @@ export class FieldmappingManagerComponent {
     
   }
 
-  async parseTemplateCSVFields():Promise<object> {
-    let fieldsArray = []
+  sourceFormatSelectionChange(index:number) {
+    this.sourceFormatSelectedIndex = index
+  }
+
+  async parseTemplateFields():Promise<object> {
     let fields = {}
-    
-    //we wrap Papa.parse() in a Promise resolver as a way of waiting for Papa's asynchronous 'complete' callback to run before returning a result (the 'fields' object)
-    return new Promise(resolve => {
-      Papa.parse(this.templateCSV,{
-        header: true,
-        complete: (results) => {
-          console.log('results',results);
-          fieldsArray = results.meta.fields
-          console.log(fieldsArray)
-          fieldsArray?.forEach((fieldName) => {
-            fields[fieldName] = ''
-          })
-          resolve(fields)
-        }
+
+    if(this.sourceFormats[this.sourceFormatSelectedIndex] === 'csv') {
+      let fieldsArray = []
+      
+      //we wrap Papa.parse() in a Promise resolver as a way of waiting for Papa's asynchronous 'complete' callback to run before returning a result (the 'fields' object)
+      return new Promise(resolve => {
+        Papa.parse(this.template,{
+          header: true,
+          complete: (results) => {
+            console.log('results',results);
+            fieldsArray = results.meta.fields
+            console.log(fieldsArray)
+            fieldsArray?.forEach((fieldName) => {
+              fields[fieldName] = ''
+            })
+            resolve(fields)
+          }
+        })
       })
-    })
+    }
+    
+    if(this.sourceFormats[this.sourceFormatSelectedIndex] === 'json') {
+      const jsonData = JSON.parse(await this.template.text())
+      this.flattenJSON(jsonData)
+      //sort keys alphabetically (ascending)
+      this.flattenedKeys.sort()
+
+      for(let key of this.flattenedKeys) {
+        fields[key] = ''
+      }
+
+      return new Promise(resolve => resolve(fields))
+    }
+
+    return new Promise(null)
+  }
+
+  async parseJSON() {
+    const jsonData = JSON.parse(await this.template.text())
+    console.log('jsonData: ',jsonData)
+
+    this.flattenedKeys = []
+    this.recursiveKeys(jsonData)
+    console.log(this.flattenedKeys)
+
+  }
+
+  flattenJSON(jsonData) {
+    this.flattenedKeys = []
+    this.recursiveKeys(jsonData)
+  }
+
+  recursiveKeys(obj, keyPath = '') {
+
+    Object.entries(obj).forEach(([key, val]) => {
+      let nestedKeyPath = keyPath
+      //if the key is actually an index (containing only numeric characters) we DO NOT add it to our key path...
+      if(!(/^[0-9]+/).test(key)) {
+        nestedKeyPath = keyPath + (keyPath ? '.' : '') + key;
+      }
+      //if we are dealing with an object then we want to keep drilling down into that nested object...
+      if(typeof val === 'object') {
+        this.recursiveKeys(val, nestedKeyPath);
+      }
+      //if we are not dealing with an object, or it is an array, then we want it added to our "flat" list of keys...
+      if(typeof val !== 'object' || Array.isArray(val)) {
+        this.flattenedKeys = [...new Set([...this.flattenedKeys, ...[nestedKeyPath]])]
+      }
+      
+    });
+
+  }
+
+  editSourceFieldMapping(fieldMapping:FieldMapping) {
+    this.newSourceName = fieldMapping.sourceName
+    this.fieldMappingIDBeingUpdated = fieldMapping.id
+    this.sourceFormatSelectedIndex = fieldMapping.sourceFormat ? this.sourceFormats.findIndex((format) => format === fieldMapping.sourceFormat) : 0
   }
 
   async duplicateSourceFieldMapping(fieldMapping:FieldMapping) {
     const newFieldMapping:FieldMapping = {
       sourceName: fieldMapping.sourceName + ' <COPY>',
+      sourceFormat: fieldMapping.sourceFormat ? fieldMapping.sourceFormat : this.sourceFormats[this.sourceFormatSelectedIndex],
       isCoreSource: false,
       fields:fieldMapping.fields
     }
@@ -139,6 +214,7 @@ export class FieldmappingManagerComponent {
       let updatedFieldMapping = this.fieldMappings.find((fieldMapping) => fieldMapping.id === this.fieldMappingIDBeingUpdated)
       if(updatedFieldMapping.sourceName !== this.newSourceName) {
         updatedFieldMapping.sourceName = this.newSourceName
+        updatedFieldMapping.sourceFormat = this.sourceFormats[this.sourceFormatSelectedIndex]
         const result = await this.fieldMappingService.saveFieldMapping(updatedFieldMapping)
         if(result) {
           this.getFieldMappings()
@@ -165,10 +241,18 @@ export class FieldmappingManagerComponent {
       const existingFields = fieldMapping.fields
       let newField = {}
       newField[this.activeSourceField] = this.activeExportField
-      const mergedFields = {...existingFields, ...newField}
+      let mergedFields = {...existingFields, ...newField}
       console.log(mergedFields)
 
-      fieldMapping.fields = mergedFields
+      //sort keys alphabetically (ascending)
+      const sortedKeys = Object.keys(mergedFields).sort()
+      //create a new object where keys/values will be added in the correct (sorted) order...
+      let fields = {}
+      for(let key of sortedKeys) {
+        fields[key] = mergedFields[key]
+      } 
+
+      fieldMapping.fields = fields
       const result = await this.fieldMappingService.saveFieldMapping(fieldMapping)
       if(result) {
         this.sourceFieldBeingUpdated = ''
@@ -203,13 +287,13 @@ export class FieldmappingManagerComponent {
     this.activeExportField = ''
   }
 
-  templateCSVSelected(event) {
-    this.templateCSV = event.target.files[0]
+  templateSelected(event) {
+    this.template = event.target.files[0]
     event.target.value = '' //this resets value of the file input element so that the change event is still triggered if, the next time a file is selected, it is the same as the current one.
   }
 
-  clearSelectedTemplateCSV() {
-    this.templateCSV = null
+  clearSelectedTemplate() {
+    this.template = null
   }
 
 }

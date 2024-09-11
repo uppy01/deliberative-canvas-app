@@ -9,14 +9,13 @@ import Papa from 'papaparse';
 import { generateRandomString } from '../../utils/generator';
 import { FormsModule } from '@angular/forms';
 import { KeywordService } from '../../services/data/keyword.service';
-import { AppService } from '../../services/app.service';
 import { StorageService } from '../../services/storage.service';
 import { KeywordAnnotatorComponent } from "../features/keyword-annotator/keyword-annotator.component";
 import { AnnotatorService } from '../../services/annotator.service';
 import { Router, Event, NavigationEnd } from '@angular/router';
 import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
-import { MutationCascadeService } from '../../services/data/mutation-cascade.service';
 import Modal from 'bootstrap/js/dist/modal'
+import { ParserService } from '../../services/parser.service';
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -38,7 +37,7 @@ export class AdapterPipelineComponent {
   isRemoteSourceFile:boolean = false
   isImportInProgress:boolean = false
   mappedFields = {}
-  responses:object[]
+  parsedEntries:object[]
   remoteJSONExportURL:string = ''
   selectedExportLog:ExportLog
   updatingRemoteDataSource:boolean = false
@@ -62,7 +61,7 @@ export class AdapterPipelineComponent {
   canvasViews_modal:Modal
   
 
-  constructor(private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, protected syncService:SyncService, private router:Router) { }
+  constructor(private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private parserService:ParserService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')
@@ -138,7 +137,7 @@ export class AdapterPipelineComponent {
       if(kumuJSONString) {
         const kumuJSON = JSON.parse(kumuJSONString)
         console.log(kumuJSON)
-        this.responses = kumuJSON['elements']
+        this.parsedEntries = kumuJSON['elements']
       }
     }
     else {
@@ -186,7 +185,7 @@ export class AdapterPipelineComponent {
     this.importedFileName = ''
     this.isRemoteSourceFile = false
     this.mappedFields = {}
-    this.responses = null
+    this.parsedEntries = null
     this.remoteJSONExportURL = ''
     this.updatingRemoteDataSource = false
 
@@ -207,9 +206,9 @@ export class AdapterPipelineComponent {
       this.selectedFieldMapping = null
     }
 
-    //changing the field mapping source for a previously saved export that has a remote source file clears the response data so that it can be re-imported using the newly assigned field mapping source..
-    if(this.selectedExportLog.id && this.isRemoteSourceFile && this.responses !== null) {
-      this.responses = null
+    //changing the field mapping source for a previously saved export that has a remote source file clears the entries data so that it can be re-imported using the newly assigned field mapping source..
+    if(this.selectedExportLog.id && this.isRemoteSourceFile && this.parsedEntries !== null) {
+      this.parsedEntries = null
     }
   }
 
@@ -221,7 +220,7 @@ export class AdapterPipelineComponent {
     this.sourceURL = ''
     this.isRemoteSourceFile = false
 
-    this.responses = null
+    this.parsedEntries = null
   }
 
   setRemoteFileLocation() {
@@ -230,7 +229,7 @@ export class AdapterPipelineComponent {
 
     this.importedFileName = 'Remote Source File' //TODO
     
-    this.responses = null
+    this.parsedEntries = null
   }
 
   importSourceData() {
@@ -238,7 +237,7 @@ export class AdapterPipelineComponent {
     this.parseFile()
   }
 
-  parseFile() {
+  async parseFile() {
     if(this.sourceLocalFile || this.sourceURL) {
       this.isImportInProgress = true
 
@@ -247,50 +246,40 @@ export class AdapterPipelineComponent {
 
       this.mappedFields = this.selectedFieldMapping?.fields
 
-      let parseConfig:Papa.ParseConfig = {
-        header: true,
-        transformHeader: (header) => {
-          return this.mappedFields?.hasOwnProperty(header) ? this.mappedFields[header] : header
-        },
-        transform: (value,header) => {
-          if(header === 'group-informed-consensus'){
-            return Number(value).toFixed(3)
-          }
-          else {
-            return value
-          }
-        },
-        complete: (results) => {
-          console.log('results',results);
-          this.responses = results.data as object[]
-          this.doAdditionalTransforms()
-        }
+      if(!this.selectedFieldMapping?.sourceFormat || this.selectedFieldMapping.sourceFormat === 'csv') {
+        this.parsedEntries = await this.parserService.csvToJSON(fileToParse,this.sourceLocalFile ? true : false,this.mappedFields)
+        
       }
-
-      if(!this.sourceLocalFile) {
-        parseConfig['download'] = true
+      else if(this.selectedFieldMapping.sourceFormat === 'json') {
+        let jsonData
+        if(this.sourceLocalFile) {
+          jsonData = JSON.parse(await this.sourceLocalFile.text())
+        }
+        else {
+          try {
+            const fetchResult = await fetch(new URL(fileToParse))
+            jsonData = await fetchResult.json()
+          }
+          catch(e) {
+            console.log('error fetching remote source file (json)')
+            alert('there was a problem retrieving the remote file')
+          }
+        }
+        console.log(jsonData)
+        this.parsedEntries = this.parserService.jsonToJSON(jsonData,this.mappedFields)
       }
       
-      Papa.parse(fileToParse, parseConfig)
+      this.isImportInProgress = false
+
+      if(this.updatingRemoteDataSource) {
+        this.updateKeywordsActiveState();
+        [ this.parsedEntries ] = this.annotatorService.addKeywordsToEntries(this.parsedEntries,this.keywords)
+
+        this.saveExportLog()
       }
-  }
 
-  doAdditionalTransforms() {
-    console.log('doAdditionalTransforms called')
-    for(let i = 0 ; i < this.responses.length ; i++) {
-      this.responses[i]['date'] = new Date(Number(this.responses[i]['timestamp'])).toUTCString()
     }
-    this.responses.sort((a,b) => b['group-informed-consensus'] - a['group-informed-consensus'])
-
-    this.isImportInProgress = false
-
-    if(this.updatingRemoteDataSource) {
-      this.updateKeywordsActiveState();
-      [ this.responses ] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
-
-      this.saveExportLog()
-    }
-    
+      
   }
 
   showKeywordAnnotator() {
@@ -306,8 +295,8 @@ export class AdapterPipelineComponent {
     }
   }
 
-  keywordsAnnotationComplete(responses:object[]) {
-    this.responses = responses
+  keywordsAnnotationComplete(entries:object[]) {
+    this.parsedEntries = entries
   }
 
   appliedKeyWordsUpdated(appliedKeywords:Keyword[]) {
@@ -319,7 +308,7 @@ export class AdapterPipelineComponent {
   }
 
   async exportAsKumuJSON() {
-    this.download(this.generateKumuJSONString(),'json')
+    this.download(this.parserService.generateKumuJSONString(this.parsedEntries),'json')
     //if the exportLog is an existing one then we want to update it when the user exports a JSON
     if(this.selectedExportLog.id) { 
       this.saveExportLog()
@@ -328,7 +317,7 @@ export class AdapterPipelineComponent {
 
   async saveExportLog() {
     
-    const kumuJSONString = this.generateKumuJSONString()
+    const kumuJSONString = this.parserService.generateKumuJSONString(this.parsedEntries)
     const fileExtension = 'json'
     
     let exportLogToSave:ExportLog = this.selectedExportLog
@@ -367,19 +356,13 @@ export class AdapterPipelineComponent {
     elem.click();
   }
 
-  generateKumuJSONString():string {
-    let kumuJSON = new Object()
-    kumuJSON['elements'] = this.responses
-    return JSON.stringify(kumuJSON)
-  }
-
   async copyExportedURL() {
     await navigator.clipboard.writeText(this.remoteJSONExportURL)
   }
 
   updateAndSyncWithRemoteSource() {
     this.updatingRemoteDataSource = true;
-    this.responses = null
+    this.parsedEntries = null
     this.parseFile()
   }
 
@@ -387,8 +370,8 @@ export class AdapterPipelineComponent {
     this.progBarProgress = progress
   }
 
-  clearResponses() {
-    this.responses = null
+  clearEntries() {
+    this.parsedEntries = null
     this.appliedKeywords = null
     this.updateKeywordsActiveState()
   }

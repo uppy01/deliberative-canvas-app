@@ -27,7 +27,7 @@ export class KeywordAnnotatorComponent {
   appliedKeywords:Keyword[]
   
   @Input()
-  responses:object[]
+  parsedEntries:object[]
 
   @Output()
   keywordsAnnotationComplete = new EventEmitter<object[]>()
@@ -53,18 +53,18 @@ export class KeywordAnnotatorComponent {
     return this.keywords?.find((keyword) => keyword.isActive === true) ? false : true
   }
 
-  async addKeywordsToResponses() {
-    [this.responses,this.appliedKeywords] = this.annotatorService.addKeywordsToResponses(this.responses,this.keywords)
+  async addKeywordsToEntries() {
+    [this.parsedEntries,this.appliedKeywords] = this.annotatorService.addKeywordsToEntries(this.parsedEntries,this.keywords)
 
-    this.keywordsAnnotationComplete.emit(this.responses)
+    this.keywordsAnnotationComplete.emit(this.parsedEntries)
     this.appliedKeywordsUpdated.emit(this.appliedKeywords)
   }
 
-  removeAllKeywordsFromResponses() {
-    this.responses.map((response) => {
-      response['keywords'] = []
+  removeAllKeywordsFromEntries() {
+    this.parsedEntries.map((entry) => {
+      entry['keywords'] = []
     })
-    this.keywordsAnnotationComplete.emit(this.responses)
+    this.keywordsAnnotationComplete.emit(this.parsedEntries)
 
     this.appliedKeywords = null
     this.appliedKeywordsUpdated.emit(this.appliedKeywords)

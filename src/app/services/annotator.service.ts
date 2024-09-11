@@ -10,29 +10,29 @@ export class AnnotatorService {
 
   }
 
-  addKeywordsToResponses(responses:object[],keywords:Keyword[]):[object[],Keyword[]] {
+  addKeywordsToEntries(entries:object[],keywords:Keyword[]):[object[],Keyword[]] {
     const keywordsToApply:Keyword[] = keywords.filter((keyword) => keyword.isActive === true)
-    let responseKeywords
+    let entryKeywords
     
-    if(keywordsToApply?.length > 0 && responses?.length > 0) {
-      responses.forEach((response,i) => {
-        responseKeywords = []
+    if(keywordsToApply?.length > 0 && entries?.length > 0) {
+      entries.forEach((entry,i) => {
+        entryKeywords = []
         keywordsToApply.forEach((keyword) => {
-          if(response['Label']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
-            keyword.variants.some(variant => response['Label']?.toLowerCase().includes(variant.toLowerCase())) || 
-            response['Description']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
-            keyword.variants.some(variant => response['Description']?.toLowerCase().includes(variant.toLowerCase())))
+          if(entry['Label']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
+            keyword.variants.some(variant => entry['Label']?.toLowerCase().includes(variant.toLowerCase())) || 
+            entry['Description']?.toLowerCase().includes(keyword.word.toLowerCase()) || 
+            keyword.variants.some(variant => entry['Description']?.toLowerCase().includes(variant.toLowerCase())))
           {
-              responseKeywords.push(keyword.word)
+              entryKeywords.push(keyword.word)
           }
         })
-        responses[i]['keywords'] = responseKeywords
+        entries[i]['keywords'] = entryKeywords
       })
       
-      console.log(responses)
+      console.log(entries)
     }
 
-    return [responses,keywordsToApply]
+    return [entries,keywordsToApply]
  
   }
 
