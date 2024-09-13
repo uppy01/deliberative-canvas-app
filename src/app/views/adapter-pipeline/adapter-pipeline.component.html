@@ -79,11 +79,16 @@
                 <div *ngIf="parsedEntries" class="v-stack justify-content-center">
                     <div class="d-flex justify-content-between mb-4">
                         <button class="btn btn-primary fs-4" data-bs-toggle="modal" data-bs-target="#keywordAnnotator_div" (click)="showKeywordAnnotator()">Add Keywords</button>
-                        <button class="btn btn-link" (click)="clearEntries()">clear data</button>
+                        <div class="">
+                            <p>Total Rows: {{parsedEntries?.length}}</p>
+                            <button class="btn btn-link" (click)="clearEntries()">clear data</button>
+                        </div>
                     </div>
-                    <ul class="list-group list-group-flush">
+                    <ag-grid-angular (gridReady)="onGridReady($event)" style="width: 100%; height: 100vh;" class="ag-theme-quartz" [rowData]="parsedEntries" [columnDefs]="dataGridColumns"
+      />
+                    <!-- <ul class="list-group list-group-flush">
                         <li *ngFor="let entry of parsedEntries" class="list-group-item">[{{entry['id']}}] [{{entry['canvasEntity']}}] {{entry['label']}} (<b>{{entry['keywords']}}</b>)</li>
-                    </ul>
+                    </ul> -->
                 </div>
             </div>
             
@@ -115,7 +120,7 @@
                             </div>
                             <div class="mb-3">
                                 <label for="exportDescription_ta" class="form-label">Description</label>
-                                <textarea class="form-control" id="exportDescription_ta" rows="3" [(ngModel)]="selectedExportLog.description" placeholder="enter description..."></textarea>
+                                <textarea class="form-control" id="exportDescription_ta" rows="2" [(ngModel)]="selectedExportLog.description" placeholder="enter description..."></textarea>
                             </div>
                             <div *ngIf="syncService.syncServerURL !== ''" class="d-flex align-items-middle align-vertical justify-content-between mb-3">
                                 <div class="w-100">

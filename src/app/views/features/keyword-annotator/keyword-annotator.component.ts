@@ -1,6 +1,6 @@
 import { NgFor } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { Keyword } from '../../../services/data/schema';
+import { Keyword } from '../../../model/schema';
 import { FormsModule } from '@angular/forms';
 import { KeywordService } from '../../../services/data/keyword.service';
 import { AnnotatorService } from '../../../services/annotator.service';

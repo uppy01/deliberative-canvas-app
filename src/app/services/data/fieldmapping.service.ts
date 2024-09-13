@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, FieldMapping } from './schema';
+import { EarthstarDocPath, FieldMapping } from '../../model/schema';
 import { generateRandomString } from '../../utils/generator';
 import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage.service';
@@ -150,6 +150,7 @@ export class FieldmappingService {
             const newCoreFieldMapping:FieldMapping = {
               id: remoteFieldMapping.id,
               sourceName: remoteFieldMapping.sourceName,
+              sourceFormat: remoteFieldMapping.sourceFormat,
               isCoreSource: true,
               fields: remoteFieldMapping.fields,
               dateCreated: Date.now(),

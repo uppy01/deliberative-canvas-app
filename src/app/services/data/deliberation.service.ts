@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, Deliberation } from './schema';
+import { EarthstarDocPath, Deliberation } from '../../model/schema';
 import { generateRandomString } from '../../utils/generator';
 import { StorageService } from '../storage.service';
 import { SchemaService } from './schema.service';

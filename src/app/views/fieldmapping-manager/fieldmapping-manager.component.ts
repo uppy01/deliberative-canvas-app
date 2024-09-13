@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { FieldmappingService } from '../../services/data/fieldmapping.service';
-import { ExportLog, FieldMapping } from '../../services/data/schema';
+import { ExportLog, FieldMapping } from '../../model/schema';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppService } from '../../services/app.service';
@@ -132,16 +132,6 @@ export class FieldmappingManagerComponent {
     }
 
     return new Promise(null)
-  }
-
-  async parseJSON() {
-    const jsonData = JSON.parse(await this.template.text())
-    console.log('jsonData: ',jsonData)
-
-    this.flattenedKeys = []
-    this.recursiveKeys(jsonData)
-    console.log(this.flattenedKeys)
-
   }
 
   flattenJSON(jsonData) {

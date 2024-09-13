@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { KeywordService } from '../../services/data/keyword.service';
-import { ExportLog, Keyword } from '../../services/data/schema';
+import { ExportLog, Keyword } from '../../model/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { AppService } from '../../services/app.service';

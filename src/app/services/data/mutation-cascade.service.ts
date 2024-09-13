@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanvasView, EarthstarDocPath, ExportLog, SchemaMutation } from './schema';
+import { CanvasView, EarthstarDocPath, ExportLog, SchemaMutation } from '../../model/schema';
 import { CanvasviewService } from './canvasview.service';
 import { ExportlogService } from './exportlog.service';
 import { Subscription } from 'rxjs';

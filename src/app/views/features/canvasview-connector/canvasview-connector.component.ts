@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { CanvasView, EarthstarDocPath } from '../../../services/data/schema';
+import { CanvasView, EarthstarDocPath } from '../../../model/schema';
 import { FormsModule } from '@angular/forms';
 import { NgFor, NgIf } from '@angular/common';
 import { CanvasviewService } from '../../../services/data/canvasview.service';

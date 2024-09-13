@@ -10,3 +10,6 @@
     - do this in `hosting > build settings > build image settings > live package updates` section of the Amplify console.
 - the 'fieldmappings.json' fetched from GitHub on app load is subject to GH's caching policy (~ 5 minutes), so any changes/commits to that file may not show up immediately in the app upon refresh/reload.
 - the 'MutationCascadeService' injected into 'app.component.ts' is purely for "bootstrapping" schema mutation cascading across related schemas (in relational database fashion)
+- ag-grid
+    - the grid is "smart" in terms of interpreting field/key names expressed in dot notation as being nested objects (https://www.ag-grid.com/angular-data-grid/value-getters/#field), however this causes issues for us as we have already "flattened" the keys and so don't want this behaviour!
+    - sometimes the grid is not so smart when it comes to interpreting the data types for columns...particularly interpreting numbers as text, which can mess up the sorting functionality.

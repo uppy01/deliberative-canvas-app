@@ -1,11 +1,10 @@
 import { DatePipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../../services/data/schema';
+import { EarthstarDocPath, ExportLog, FieldMapping, Keyword } from '../../model/schema';
 import { ExportlogService } from '../../services/data/exportlog.service';
 import { SyncService } from '../../services/sync.service';
 import { AuthService } from '../../services/auth.service';
 import { FieldmappingService } from '../../services/data/fieldmapping.service';
-import Papa from 'papaparse';
 import { generateRandomString } from '../../utils/generator';
 import { FormsModule } from '@angular/forms';
 import { KeywordService } from '../../services/data/keyword.service';
@@ -16,11 +15,13 @@ import { Router, Event, NavigationEnd } from '@angular/router';
 import { CanvasviewConnectorComponent } from "../features/canvasview-connector/canvasview-connector.component";
 import Modal from 'bootstrap/js/dist/modal'
 import { ParserService } from '../../services/parser.service';
+import { AgGridAngular } from 'ag-grid-angular';
+import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
 
 @Component({
   selector: 'app-adapter-pipeline',
   standalone: true,
-  imports: [NgFor, NgIf, FormsModule, DatePipe, NgStyle, NgClass, KeywordAnnotatorComponent, CanvasviewConnectorComponent],
+  imports: [NgFor, NgIf, FormsModule, DatePipe, NgStyle, NgClass, KeywordAnnotatorComponent, CanvasviewConnectorComponent,AgGridAngular],
   templateUrl: './adapter-pipeline.component.html',
   styleUrl: './adapter-pipeline.component.css',
 })
@@ -42,6 +43,8 @@ export class AdapterPipelineComponent {
   selectedExportLog:ExportLog
   updatingRemoteDataSource:boolean = false
   progBarProgress:string = '0%';
+  dataGridColumns:ColDef[]
+  dataGridApi: GridApi;
 
   @ViewChild('showImportSource_btn')
   showImportSource_btn:ElementRef<HTMLButtonElement>
@@ -59,7 +62,7 @@ export class AdapterPipelineComponent {
   @ViewChild('canvasViews_div')
   canvasViews_div:ElementRef<HTMLDivElement>
   canvasViews_modal:Modal
-  
+
 
   constructor(private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private parserService:ParserService, protected syncService:SyncService, private router:Router) { }
 
@@ -105,6 +108,10 @@ export class AdapterPipelineComponent {
     this.allExportLogs = await this.exportlogService.getExportLogs()
     this.allExportLogs?.sort((a,b) => new Date(b.dateUpdated).getTime() - new Date(a.dateUpdated).getTime())
 
+  }
+
+  onGridReady(params: GridReadyEvent) {
+    this.dataGridApi = params.api
   }
 
   async getExportLog(id:EarthstarDocPath) {
@@ -277,9 +284,58 @@ export class AdapterPipelineComponent {
 
         this.saveExportLog()
       }
+      else {
+        this.configureDataGridColumns()
+      }
 
     }
       
+  }
+
+  configureDataGridColumns() {
+    this.dataGridColumns = []
+    const priorityColumnKeys:string[] = ['id','canvasEntity','label','keywords']
+    let nonPriorityColumnKeys:string[] = []
+
+    //we want the priority columns to be first in terms of column ordering...
+    for(let key of priorityColumnKeys) {
+      const column:ColDef = {
+        field: key,
+        width: key === 'label' ? 400 : 100,
+        filter: true,
+        floatingFilter: key === 'label' ? true : false,
+        tooltipField: key,
+        headerTooltip: key,
+        wrapText: key === 'label' || key === 'keywords' ? true : false,
+        autoHeight: true,
+        cellDataType: key === 'id' ? 'text' : true //explicitly set 'id' to 'text' to avoid it being interpreted as a number
+      }
+      this.dataGridColumns.push(column)
+    }
+
+    
+    //...now iterate through to find all other keys in the 'parsedEntries' array of objects...
+    for(let entry of this.parsedEntries) {
+      for(let key in entry) {
+        if(!priorityColumnKeys.includes(key) && !nonPriorityColumnKeys.includes(key)) {
+          nonPriorityColumnKeys.push(key)
+        }
+      }
+    }
+
+    //...then add the remaining columns...
+    //(note: we use a value getter rather than setting the 'field' property to avoid keys with dot notation causing issues - https://www.ag-grid.com/angular-data-grid/value-getters/#field)
+    for(let key of nonPriorityColumnKeys) {
+      const column:ColDef = {
+        headerName: key,
+        valueGetter: p => p.data[key],
+        width: 100,
+        filter: true,
+        tooltipValueGetter: p => p.value,
+        headerTooltip: key
+      }
+      this.dataGridColumns.push(column)
+    }
   }
 
   showKeywordAnnotator() {
@@ -297,6 +353,7 @@ export class AdapterPipelineComponent {
 
   keywordsAnnotationComplete(entries:object[]) {
     this.parsedEntries = entries
+    this.dataGridApi.refreshCells() //without this the grid won't display the correct data until the next change detection...
   }
 
   appliedKeyWordsUpdated(appliedKeywords:Keyword[]) {

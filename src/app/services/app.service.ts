@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AuthService } from './auth.service';
 import { Subscription } from 'rxjs';
-import { EarthstarAuthorAddress, EarthstarProfile} from './data/schema';
+import { EarthstarAuthorAddress, EarthstarProfile} from '../model/schema';
 import { SyncService } from './sync.service';
 import { AboutuserService } from './data/aboutuser.service';
 import { StorageService } from './storage.service';

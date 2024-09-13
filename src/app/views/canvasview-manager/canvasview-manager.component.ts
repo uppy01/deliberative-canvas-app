@@ -1,7 +1,7 @@
 import { Component, ElementRef, SecurityContext, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { CanvasView, EarthstarDocPath, ExportLog } from '../../services/data/schema';
+import { CanvasView, EarthstarDocPath, ExportLog } from '../../model/schema';
 import { DatePipe, NgFor, NgIf } from '@angular/common';
 import { CanvasviewService } from '../../services/data/canvasview.service';
 import * as _ from 'lodash';

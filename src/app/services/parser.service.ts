@@ -20,12 +20,7 @@ export class ParserService {
           return mappedFields?.hasOwnProperty(header) ? mappedFields[header] : header
         },
         transform: (value,header) => {
-          if(header === 'group-informed-consensus'){
-            return Number(value).toFixed(3)
-          }
-          else {
-            return value
-          }
+          return value
         },
         complete: (results) => {
           console.log('results',results);
@@ -54,6 +49,16 @@ export class ParserService {
       }
       else {
         entry['canvasEntity'] = 'element'
+      }
+
+      //if an entry key/field name suggests it could be of type Date but is in milliseconds since Unix epoch (number with 13 digits), then convert to date...
+      for (let key in entry) {
+        if(key.toLowerCase().includes('time') || key.toLowerCase().includes('date')) {
+          if(Number(entry[key]) && entry[key].toString().length >= 13) {
+            entry[key] = new Date(Number(entry[key]))
+            console.log('converted to date:',entry[key])
+          }
+        }
       }
     }
   

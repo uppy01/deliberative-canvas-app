@@ -92,7 +92,6 @@
                 <label>{{template?.name}}</label>
                 <button *ngIf="template" class="btn btn-sm" (click)="clearSelectedTemplate()"><i class="bi bi-trash3"></i></button>
             </div>
-            <button (click)="parseJSON()" >parse JSON</button>
             <button class="btn btn-success w-100 mt-3" (click)="fieldMappingIDBeingUpdated === '' ? addSourceFieldMapping() : updateSourceName()" [disabled]="newSourceName === ''" data-bs-dismiss="modal">{{fieldMappingIDBeingUpdated === '' ? 'Create' : 'Update'}}</button>
         </div>
       </div>

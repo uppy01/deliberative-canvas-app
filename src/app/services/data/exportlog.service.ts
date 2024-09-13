@@ -3,7 +3,7 @@ import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
 import { generateSlugString } from '../../utils/generator';
-import { EarthstarDocPath, ExportLog } from './schema';
+import { EarthstarDocPath, ExportLog } from '../../model/schema';
 import { StorageService } from '../storage.service';
 import { SchemaService } from './schema.service';
 

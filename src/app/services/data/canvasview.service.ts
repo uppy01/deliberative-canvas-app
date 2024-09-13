@@ -2,10 +2,9 @@ import { Injectable } from '@angular/core';
 import { AppService } from '../app.service';
 import { AuthService } from '../auth.service';
 import * as Earthstar from 'earthstar';
-import { EarthstarDocPath, CanvasView, SchemaMutation } from './schema';
+import { EarthstarDocPath, CanvasView } from '../../model/schema';
 import { generateSlugString } from '../../utils/generator';
 import { StorageService } from '../storage.service';
-import { BehaviorSubject } from 'rxjs';
 import { SchemaService } from './schema.service';
 
 @Injectable({
