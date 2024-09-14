@@ -1,6 +1,6 @@
 <nav class="navbar border-bottom" style="background-color: #e3f2fd;">
   <div class="container-fluid">
-    <a class="navbar-brand" routerLink="/">Deliberative Canvas ({{context}})</a>
+    <a class="navbar-brand" routerLink="/">Deliberative Canvas <small>({{appVersion}})</small></a>
     <div class="d-flex align-items-center">
       <div *ngIf="syncService.syncInProgress" class="spinner-border spinner-border-sm text-success m-2">
         <span class="visually-hidden">importing data...</span>
