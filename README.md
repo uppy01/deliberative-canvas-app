@@ -1,6 +1,8 @@
 # Deliberative Canvas App
 
-This app uses the Angular framework (and therefore TypeScript) and Earthstar for auth and storage.
+**NOTE: this app is in alpha and the code is quite crude at present...it will be refactored and cleaned up as the required features and functions of the app are validated through user feedback.**
+
+The app uses the Angular framework (and therefore TypeScript) and Earthstar for auth and storage.
 
 As well as the below, it might also be worth checking out the [project notes](PROJECTNOTES.md) if you plan to build and host your own instance of this app.
 
@@ -38,6 +40,10 @@ https://earthstar-project.org/docs/what-is-it
 
 https://github.com/earthstar-project/earthstar
 
-There will also be an accompanying repository available soon for spinning up a Deliberative Canvas "sync server", which is based on [Earthstar server](https://earthstar-project.org/docs/server-guide).
+There is an accompanying [repository](https://github.com/uppy01/deliberative-canvas-server) available for spinning up a Deliberative Canvas "sync server", which is based on [Earthstar server](https://earthstar-project.org/docs/server-guide).
 
-If you like putting labels on things, this app and the underlying Earthstar infrastructure aligns with the emerging [local-first software](https://localfirstweb.dev/) movement.
+---
+
+#### Local-First
+
+Conceptually, this app and the underlying Earthstar infrastructure aligns with the emerging [local-first software](https://localfirstweb.dev/) movement.
