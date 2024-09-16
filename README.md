@@ -1,8 +1,10 @@
 # Deliberative Canvas App
 
+Details regarding the purpose and use-cases for the Deliberative Canvas can be found in the [docs](https://deliberative-canvas.gitbook.io/deliberative-canvas-docs)
+
 **NOTE: this app is in alpha and the code is quite crude at present...it will be refactored and cleaned up as the required features and functions of the app are validated through user feedback.**
 
-The app uses the Angular framework (and therefore TypeScript) and Earthstar for auth and storage.
+The app uses the Angular framework (and thus TypeScript), and Earthstar for auth and storage.
 
 As well as the below, it might also be worth checking out the [project notes](PROJECTNOTES.md) if you plan to build and host your own instance of this app.
 
