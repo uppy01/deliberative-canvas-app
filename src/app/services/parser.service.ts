@@ -17,7 +17,7 @@ export class ParserService {
       let parseConfig:Papa.ParseConfig = {
         header: true,
         transformHeader: (header) => {
-          return mappedFields?.hasOwnProperty(header) ? mappedFields[header] : header
+          return mappedFields?.hasOwnProperty(header) && mappedFields[header] !== '' ? mappedFields[header] : header
         },
         transform: (value,header) => {
           return value
@@ -25,7 +25,7 @@ export class ParserService {
         complete: (results) => {
           console.log('results',results);
           let entries = results.data as object[]
-          entries = this.doAdditionalTransforms(entries)
+          entries = this.doAdditionalCSVTransforms(entries,mappedFields)
           resolve(entries)
         }
       }
@@ -40,9 +40,25 @@ export class ParserService {
 
   }
 
-  doAdditionalTransforms(entries:object[]):object[] {
-    console.log('doAdditionalTransforms called')
+  doAdditionalCSVTransforms(entries:object[],mappedFields:object):object[] {
+
     for(let entry of entries) {
+      
+      //if there are field mappings then only keep the headers (fields) that are found in those mappings...
+      if(mappedFields) {
+        Object.entries(entry).forEach(([header,value]) => {
+          let keepHeader = false
+          Object.entries(mappedFields).forEach(([sourceField,exportField]) => {
+            if(header == sourceField || header == exportField) {
+             keepHeader = true 
+            }
+          })
+          if(!keepHeader) {
+            delete entries[entries.findIndex(object => object == entry)][header]
+          }
+        })
+      }
+
       //if the entry has populated 'from' and 'to' fields/headers, we are going to assign it as a 'connection', otherwise assume it is an 'element'
       if(entry.hasOwnProperty('from') && entry['from'] !== '' && entry.hasOwnProperty('to') && entry['to'] !== '') {
         entry['canvasEntity'] = 'connection'
@@ -51,18 +67,32 @@ export class ParserService {
         entry['canvasEntity'] = 'element'
       }
 
-      //if an entry key/field name suggests it could be of type Date but is in milliseconds since Unix epoch (number with 13 digits), then convert to date...
+      
       for (let key in entry) {
+        //if an entry key/field name suggests it could be of type Date then convert to our preferred date format (YYYY-MM-DD)...
         if(key.toLowerCase().includes('time') || key.toLowerCase().includes('date')) {
-          if(Number(entry[key]) && entry[key].toString().length >= 13) {
-            entry[key] = new Date(Number(entry[key]))
-            console.log('converted to date:',entry[key])
-          }
+          entry[key] = this.transformDateField(entry[key])
         }
       }
     }
   
     return entries
+  }
+
+  transformDateField(value:string):string {
+    let transformedDateField:string = ''
+
+    //...if in milliseconds since Unix epoch (number with 13 digits), 
+    if(Number(value) && value.toString().length >= 13) {
+      transformedDateField = new Date(Number(value)).toISOString().slice(0,10) //returns "YYYY-MM-DDTHH:mm:ss.sssZ" - only grab first 10 characters
+      console.log('converted Unix epoch milliseconds to date:',transformedDateField)
+    }
+    else {
+      transformedDateField = value.slice(0,10) //only grab first 10 characters (which will hopefully be YYYY-MM-DD)
+      console.log('trimmed date:',transformedDateField)
+    }
+
+    return transformedDateField
   }
 
   jsonToJSON(dataToParse:object,mappedFields:object):object[] {
@@ -117,6 +147,11 @@ export class ParserService {
           const transformedElementKey = exportKey && exportKey !== '' ? exportKey : sourceKey
           //get the actual value (data being imported) for the key (using dot notation ('.') path)
           transformedElement[transformedElementKey] = _.get(element,sourceKey)
+
+          //if it's a potential date field then transform to our preferred format...
+          if(transformedElementKey.toLowerCase().includes('time') || transformedElementKey.toLowerCase().includes('date')) {
+            transformedElement[transformedElementKey] = this.transformDateField(transformedElement[transformedElementKey])
+          }
         } 
       })
       transformedElements.push(transformedElement)
@@ -137,6 +172,11 @@ export class ParserService {
           const transformedConnectionKey = exportKey && exportKey !== '' ? exportKey : sourceKey
           //get the actual value (data being imported) for the key (using dot notation ('.') path)
           transformedConnection[transformedConnectionKey] = _.get(connection,sourceKey)
+
+          //if it's a potential date field then transform to our preferred format...
+          if(transformedConnectionKey.toLowerCase().includes('time') || transformedConnectionKey.toLowerCase().includes('date')) {
+            transformedConnection[transformedConnectionKey] = this.transformDateField(transformedConnection[transformedConnectionKey])
+          }
         } 
       })
       if(!transformedConnection.hasOwnProperty('id')) {

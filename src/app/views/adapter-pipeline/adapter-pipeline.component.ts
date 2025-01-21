@@ -208,9 +208,11 @@ export class AdapterPipelineComponent {
   fieldMappingSelectionChange(event) {
     if(event.target.value !== '') {
       this.selectedFieldMapping = this.fieldMappings[event.target.value]
+      console.log('fields in selectedFieldMapping: ',this.selectedFieldMapping.fields)
     }
     else {
       this.selectedFieldMapping = null
+      console.log('no field mapping selected')
     }
 
     //changing the field mapping source for a previously saved export that has a remote source file clears the entries data so that it can be re-imported using the newly assigned field mapping source..

@@ -1,3 +1,8 @@
+**Critical For Deployment/Production**
+- make sure app.service's 'remoteFieldMappingURL' is correct before deploying to production!
+
+---
+
 - Earthstar package wouldn't install using node v22.5.1 (problem installing better-sqlite3 dependency) - got it installed using v.21.5.0
 - need to npm install "@types/papaparse" to work with TypeScript (non-negotiable if in TS strict mode, however I've turned this off)
 - to avoid errors and warnings when running and using output of "ng build", need to add the following...
