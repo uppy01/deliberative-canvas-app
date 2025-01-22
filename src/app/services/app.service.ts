@@ -13,6 +13,8 @@ export class AppService {
 
   appName:string = 'delibcanvas'
 
+  appLoadedInIframe = false
+
   remoteFieldMappingURL:string = 'https://raw.githubusercontent.com/uppy01/deliberative-canvas-config/main/fieldmapping.json'
   //for development & testing only...
   //remoteFieldMappingURL:string = 'https://raw.githubusercontent.com/uppy01/deliberative-canvas-config/main/fieldmapping-DEV.json'

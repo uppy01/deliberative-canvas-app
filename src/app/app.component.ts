@@ -20,7 +20,7 @@ import { MutationCascadeService } from './services/data/mutation-cascade.service
 })
 export class AppComponent {
   title = 'Deliberative Canvas App';
-  appVersion = 'v0.5.0'
+  appVersion = 'v0.5.1'
 
   @ViewChild('linkProfile_div')
   linkProfile:ElementRef<HTMLDivElement>
@@ -39,6 +39,9 @@ export class AppComponent {
   }
 
   ngOnInit() {
+    //we need to know this to ascertain if clipboard api will work (it doesn't when inside an iframe)
+    if(window.location !== window.parent.location) this.appService.appLoadedInIframe = true
+    
     const storageConfiguredSubscription = this.storageService.storageConfigured.subscribe((configured) => {
       if(configured) {
 

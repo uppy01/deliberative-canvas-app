@@ -17,6 +17,7 @@ import Modal from 'bootstrap/js/dist/modal'
 import { ParserService } from '../../services/parser.service';
 import { AgGridAngular } from 'ag-grid-angular';
 import { ColDef, GridApi, GridReadyEvent } from 'ag-grid-community';
+import { AppService } from '../../services/app.service';
 
 @Component({
   selector: 'app-adapter-pipeline',
@@ -64,7 +65,7 @@ export class AdapterPipelineComponent {
   canvasViews_modal:Modal
 
 
-  constructor(private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private parserService:ParserService, protected syncService:SyncService, private router:Router) { }
+  constructor(protected appService:AppService, private authService:AuthService, private storageService:StorageService, private fieldMappingService:FieldmappingService, private exportlogService:ExportlogService, private keywordService:KeywordService, private annotatorService:AnnotatorService, private parserService:ParserService, protected syncService:SyncService, private router:Router) { }
 
   ngOnInit() {
     console.log('ngOnInit called')

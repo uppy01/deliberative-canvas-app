@@ -1,3 +1,14 @@
+#### Version 0.5.1 (2025.01.22)
+
+UI/UX
+- simpler and more intuitive UI for removing a canvas view from export log
+
+Bugs & Fixes
+- canvas view being duplicated when added to an export log
+- can't copy text to clipboard when app is embedded in Kumu (iframe) - UI now changes to only offer this option when app is standalone
+- linking a profile without a sync server configured in the original profile - you can now link without it
+
+
 #### Version 0.5.0 (2025.01.21)
 
 Features

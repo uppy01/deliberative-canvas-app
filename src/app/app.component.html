@@ -52,11 +52,11 @@
       <div class="modal-body" style="word-wrap: break-word;">
         <div>
           <b>User ID:</b> {{authService.esSettings?.author?.address}}
-          <button class="btn btn-light" (click)="copyToClipboard(authService.esSettings.author.address)"><i class="bi bi-clipboard"></i></button>
+          <button *ngIf="!appService.appLoadedInIframe"  class="btn btn-light" (click)="copyToClipboard(authService.esSettings.author.address)"><i class="bi bi-clipboard"></i></button>
         </div>
         <div class="mt-2">
           <b>Share ID:</b> {{authService.esSettings?.shares[0]}}
-          <button class="btn btn-light" (click)="copyToClipboard(authService.esSettings.shares[0])"><i class="bi bi-clipboard"></i></button>
+          <button *ngIf="!appService.appLoadedInIframe" class="btn btn-light" (click)="copyToClipboard(authService.esSettings.shares[0])"><i class="bi bi-clipboard"></i></button>
         </div>
         <div class="mt-4 mb-3">
           <label class="form-label" for="displayName_input">Profile name:</label>

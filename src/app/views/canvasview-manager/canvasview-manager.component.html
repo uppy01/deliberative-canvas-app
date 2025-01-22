@@ -41,7 +41,8 @@
         <div class="modal-body">
             <div class="d-flex justify-content-end" role="group">
                 <button *ngIf="selectedCanvasView.id" class="btn btn-sm btn-light" (click)="downloadCanvasViewJSON()"><i class="bi bi-filetype-json"></i> Download JSON File</button>
-                <button *ngIf="syncService.syncServerURL !== '' && selectedCanvasView.id" class="btn btn-sm btn-light" (click)="copyToClipboard(remoteJSONCanvasViewURL)"><i class="bi bi-clipboard"></i> Copy Remote JSON URL</button>
+                <button *ngIf="!appService.appLoadedInIframe && syncService.syncServerURL !== '' && selectedCanvasView.id" class="btn btn-sm btn-light" (click)="copyToClipboard(remoteJSONCanvasViewURL)"><i class="bi bi-clipboard"></i> Copy Remote JSON URL</button>
+                <a *ngIf="appService.appLoadedInIframe && syncService.syncServerURL !== '' && selectedCanvasView.id" class="btn btn-sm btn-light" [href]="remoteJSONCanvasViewURL" target="_blank">Remote JSON (right click to copy URL)</a>
             </div>
             <div class="mb-3">
                 <label for="canvasViewTitle_input" class="form-label">Title</label>
@@ -55,7 +56,7 @@
                 <label for="canvasViewEmbedURL_input" class="form-label">Embed Link</label>
                 <div class="input-group">
                     <input type="text" class="form-control" id="canvasViewEmbedURL_input" [(ngModel)]="selectedCanvasView.embedURL" placeholder="enter a canvas embed URL..." [class.is-invalid]="!validateEmbedURL()" >
-                    <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.embedURL)" [disabled]="selectedCanvasView.embedURL === ''"><i class="bi bi-clipboard"></i></button>
+                    <button *ngIf="!appService.appLoadedInIframe" class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.embedURL)" [disabled]="selectedCanvasView.embedURL === ''"><i class="bi bi-clipboard"></i></button>
                     <button class="btn btn-light" [disabled]="selectedCanvasView.embedURL === ''"><a [href]="selectedCanvasView.embedURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
                 </div>
                 <div *ngIf="!validateEmbedURL()"><span style="color: gray; font-style:italic;">not a valid Kumu embed link</span></div>
@@ -64,7 +65,7 @@
                 <label for="canvasViewProjectURL_input" class="form-label">Project Link</label>
                 <div class="input-group">
                     <input type="text" class="form-control" id="canvasViewProjectURL_input" [(ngModel)]="selectedCanvasView.projectURL" placeholder="enter the (Kumu) project URL that the canvas belongs to..." [class.is-invalid]="!validateProjectURL()">
-                    <button class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.projectURL)" [disabled]="selectedCanvasView.projectURL === ''"><i class="bi bi-clipboard"></i></button>
+                    <button *ngIf="!appService.appLoadedInIframe" class="btn btn-light" (click)="copyToClipboard(selectedCanvasView.projectURL)" [disabled]="selectedCanvasView.projectURL === ''"><i class="bi bi-clipboard"></i></button>
                     <button class="btn btn-light" [disabled]="selectedCanvasView.projectURL === ''"><a [href]="selectedCanvasView.projectURL" target="_blank"><i class="bi bi-box-arrow-up-right"></i></a></button>
                 </div>
                 <div *ngIf="!validateProjectURL()"><span style="color: gray; font-style:italic;">not a valid Kumu project link</span></div>

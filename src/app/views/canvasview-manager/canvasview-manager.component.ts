@@ -10,6 +10,7 @@ import { ExportlogService } from '../../services/data/exportlog.service';
 import Modal from 'bootstrap/js/dist/modal'
 import { AuthService } from '../../services/auth.service';
 import { TextFilterPipe } from '../../pipes/text-filter.pipe';
+import { AppService } from '../../services/app.service';
 
 @Component({
   selector: 'app-canvasview-manager',
@@ -38,7 +39,7 @@ export class CanvasviewManagerComponent {
   embed_iframe:ElementRef<HTMLIFrameElement>
 
 
-  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private sanitizer: DomSanitizer) {
+  constructor(protected appService:AppService, private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private sanitizer: DomSanitizer) {
     this.initSelectedCanvasView()
     this.getCanvasViews()
     this.getExportLogs()

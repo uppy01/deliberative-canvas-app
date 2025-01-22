@@ -94,16 +94,23 @@ export class LinkProfileComponent {
     this.qrCodeOutput.nativeElement.innerHTML = qrCodeSVG
   }
 
+  /* not currently in use
   async copyLinkToClipboard() {
     await navigator.clipboard.writeText(this.linkToSend)
   }
+  */
 
   async importProfile(userProfile:EarthstarProfile) {
     this.authService.updateAuthorCredentials(userProfile.author)
     await this.authService.updateShares(userProfile.shares,true)
-    await this.aboutUserService.saveDisplayName(userProfile.displayName)
+    
+    const displayName = userProfile.displayName && userProfile.displayName !== '' ? userProfile.displayName : ''
+    await this.aboutUserService.saveDisplayName(displayName)
 
-    this.syncService.addSyncServer(userProfile.syncServerURL)
+    if(userProfile.syncServerURL && userProfile.syncServerURL !== '') {
+      this.syncService.addSyncServer(userProfile.syncServerURL)
+    }
+    
     const syncCompletedSubscription = this.syncService.syncCompletedSuccessfully.subscribe((success) => {
       if(success) {
         window.location.replace(window.location.protocol + '//' + window.location.host)

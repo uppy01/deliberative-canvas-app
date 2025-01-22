@@ -8,6 +8,7 @@ import { SyncService } from '../../../services/sync.service';
 import { AuthService } from '../../../services/auth.service';
 import { StorageService } from '../../../services/storage.service';
 import { SchemaService } from '../../../services/data/schema.service';
+import { AppService } from '../../../services/app.service';
 
 @Component({
   selector: 'app-canvasview-connector',
@@ -35,7 +36,7 @@ export class CanvasviewConnectorComponent {
   }
   private _exportLogID = '';
 
-  constructor(private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) { }
+  constructor(protected appService:AppService, private canvasViewService:CanvasviewService, private exportLogService:ExportlogService, protected syncService:SyncService, private authService:AuthService, private storageService:StorageService, private schemaService:SchemaService) { }
 
   ngOnInit() {
     this.initSelectedCanvasView()
@@ -47,6 +48,7 @@ export class CanvasviewConnectorComponent {
     })
 
     //we are using this to make sure we have the latest 'canvasViews' if/when this component is re-attached (re-use strategy), as ngOnInit() won't be called...
+    //this will also take care of retrieving the latest canvasViews whenever a canvasView is saved using this component
     this.schemaService.mutationEvent.subscribe((mutation) => {
       if(mutation.schemaName === this.canvasViewService.schemaName) {
         this.getCanvasViews()
@@ -66,6 +68,7 @@ export class CanvasviewConnectorComponent {
   }
 
   async getCanvasViews() {
+    console.log('getCanvasViews called')
     this.connectedCanvasViews = []
     this.disconnectedCanvasViews = []
     this.allCanvasViews = await this.canvasViewService.getCanvasViews()
@@ -103,6 +106,7 @@ export class CanvasviewConnectorComponent {
   }
 
   removeCanvasViewFromExportLog(canvasView:CanvasView) {
+    this.selectedCanvasView = canvasView
     this.saveCanvasView(true)
   }
 
@@ -125,7 +129,6 @@ export class CanvasviewConnectorComponent {
     if(result) {
       this.showCanvasViewEditor = false
       this.initSelectedCanvasView()
-      this.getCanvasViews()
       //we want to sync with the server to make sure the remote JSON URL serves the updated CanvasView content...
       this.syncService.doSync()
     }
@@ -137,10 +140,6 @@ export class CanvasviewConnectorComponent {
 
   async copyToClipboard(text:string) {
     await navigator.clipboard.writeText(text)
-  }
-
-  checkCanvasViewContainsExportLog(canvasView:CanvasView):boolean {
-    return canvasView.exportLogIDs.find((id) => id === this._exportLogID) ? true : false
   }
 
   async generateCanvasViewJSONString():Promise<string> {

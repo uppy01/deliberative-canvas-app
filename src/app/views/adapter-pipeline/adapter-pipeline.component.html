@@ -127,7 +127,7 @@
                                     <label for="remoteJSONExportURL_input" class="form-label">Remote JSON URL</label>
                                     <div class="input-group">
                                         <input class="form-control" id="remoteJSONExportURL_input" name="remoteJSONExportURL_input" disabled="true" [value]="remoteJSONExportURL" placeholder="URL auto-generated upon save...">
-                                        <button *ngIf="remoteJSONExportURL !== ''" class="btn btn-light" title="copy remote JSON URL" (click)="copyExportedURL()"><i class="bi bi-clipboard"></i></button>
+                                        <button *ngIf="!appService.appLoadedInIframe && remoteJSONExportURL !== ''" class="btn btn-light" title="copy remote JSON URL" (click)="copyExportedURL()"><i class="bi bi-clipboard"></i></button>
                                     </div>
                                 </div>
                             </div>
