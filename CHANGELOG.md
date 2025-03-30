@@ -1,3 +1,9 @@
+#### Version 0.5.2 (2025.03.31)
+
+Bugs & Fixes
+- security fix
+
+
 #### Version 0.5.1 (2025.01.22)
 
 UI/UX

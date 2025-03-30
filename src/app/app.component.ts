@@ -20,7 +20,7 @@ import { MutationCascadeService } from './services/data/mutation-cascade.service
 })
 export class AppComponent {
   title = 'Deliberative Canvas App';
-  appVersion = 'v0.5.1'
+  appVersion = 'v0.5.2'
 
   @ViewChild('linkProfile_div')
   linkProfile:ElementRef<HTMLDivElement>
